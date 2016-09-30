@@ -1,10 +1,53 @@
-#drop{
+.section {
+  margin: 10px;
+}
+
+.section .title {
+  padding: 0px 0px 10px 0px; 
+  font-weight: bold;
+}
+
+.file-name {
+  color: #f30;
+  font-weight: normal;
+}
+
+.drop {
   border: 1px dashed #bbb;
-  -moz-border-radius: 5px;
-  -webkit-border-radius: 5px;
   border-radius: 5px;
-  padding: 50px 25px;
-  text-align: center;
-  font: 20pt bold, "Vollkorn";
+  padding: 10px;
+  min-height: 100px;
+
+  font: 20px bold;
   color: #bbb;
+  text-align: center;
+}
+
+.dropped {
+  font: 14px regular;
+  color: #000;
+  text-align: left;
+}
+
+select {
+  padding: 5px 10px;
+  margin: 0px 10px 0px 0px;
+}
+
+input.action-button {
+  margin-left: 20px;
+  padding: 5px 20px;
+}
+
+.output-table {
+  border-left: 1px solid black;
+  border-top: 1px solid black;
+  border-collapse: collapse;
+}
+
+.output-table td {
+  border-right: 1px solid black;
+  border-bottom: 1px solid black;
+  min-width: 10px;
+  padding: 4px;
 }

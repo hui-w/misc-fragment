@@ -4,36 +4,23 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<title>JS-XLSX</title>
 	<link href="./style.css" media="all" rel="stylesheet" />
-</head>
-<body>
-	<div id="drop">Drop an XLSX / XLSM / XLSB / ODS / XLS / XML file here</div>
+	<!--
 	<script src="./vendor/shim.js"></script>
 	<script src="./vendor/jszip.js"></script>
 	<script src="./vendor/xlsx.js"></script>
+	-->
+	<script type="text/javascript" src="./vendor/Blob.js"></script>
+	<script type="text/javascript" src="./vendor/FileSaver.js"></script>
+	<script type="text/javascript" src="./vendor/Export2Excel.js"></script>
+	<script type="text/javascript" src="./vendor/xlsx.core.min.js"></script>
+	<script src="./common.js"></script>
 	<script src="./excel-app.js"></script>
+</head>
+<body>
+	<div id="app" />
 	<script>
-		var drop = document.getElementById('drop');
-
-		function handleDrop(e) {
-		  e.stopPropagation();
-		  e.preventDefault();
-		  var files = e.dataTransfer.files;
-		  for (i = 0, f = files[i]; i != files.length; ++i) {
-		  	var app = new ExcelApp(f);
-		  }
-		}
-
-		function handleDragover(e) {
-			e.stopPropagation();
-			e.preventDefault();
-			e.dataTransfer.dropEffect = 'copy';
-		}
-
-		if(drop.addEventListener) {
-			drop.addEventListener('dragenter', handleDragover, false);
-			drop.addEventListener('dragover', handleDragover, false);
-			drop.addEventListener('drop', handleDrop, false);
-		}
+		var app = new ExcelApp();
+		app.render(Util.$('app'));
 	</script>
 </body>
 </html>
