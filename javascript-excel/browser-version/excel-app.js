@@ -7,7 +7,10 @@ function ExcelApp() {
   this.wbSub = null;
   this.subCollections = [];
 
-  // Binding the dom
+  // Sheet array
+  this.sheetArray = null;
+
+  // Dom objects
   this.dataTitleDom = null;
   this.subTitleDom = null;
   this.dataDropDom = null;
@@ -100,19 +103,76 @@ ExcelApp.prototype = {
   },
 
   getColumns: function(worksheet) {
-    var columnsArray = [];
-    var columnsObj = {};
+    var colKeys = [];
+    var colObj = {};
     for (var cellName in worksheet) {
       if (cellName[0] === '!') {
         continue
       };
       var col = this.getCellInfo(cellName).col;
-      if (!columnsObj[col]) {
-        columnsObj[col] = true;
-        columnsArray.push(col);
+      if (!colObj[col]) {
+        colObj[col] = true;
+        colKeys.push(col);
       }
     }
-    return columnsArray;
+    return colKeys;
+  },
+
+  renderColumnSelect: function(worksheet) {
+    var that = this;
+
+    // Render the column select
+    if (this.columnSelectorDOM) {
+      while (this.columnSelectorDOM.options.length > 0) {
+        this.columnSelectorDOM.remove(0);
+      }
+      this.columnSelectorDOM.selectedIndex = 0;
+    } else {
+      this.columnSelectorDOM = this.actionContainerDOM.createChild('select');
+    }
+
+    // Render the column options
+    var cols = this.getColumns(worksheet);
+    cols.forEach(function(col) {
+      that.columnSelectorDOM.createChild('option', {
+        value: col
+      }, col);
+    });
+  },
+
+  renderSheetSelect: function(workbook) {
+    var that = this;
+    function sheetSelectChange() {
+      var select = that.sheetSelectorDOM;
+      var selectedSheetName = select.options[select.selectedIndex].value;
+      var worksheet = that.wbData.Sheets[selectedSheetName];
+
+      console.log(worksheet);
+      console.log(that.sheetToArray(worksheet));
+
+      that.renderColumnSelect(worksheet);
+    };
+
+    // Render the sheet select
+    if (this.sheetSelectorDOM) {
+      while (this.sheetSelectorDOM.options.length > 0) {
+        this.sheetSelectorDOM.remove(0);
+      }
+      this.sheetSelectorDOM.selectedIndex = 0;
+    } else {
+      this.sheetSelectorDOM = this.actionContainerDOM.createChild('select');
+      this.sheetSelectorDOM.addEventListener('change', sheetSelectChange, false);
+    }
+
+    // Render the sheet options
+    workbook.SheetNames.forEach(function(sheetName) {
+      that.sheetSelectorDOM.createChild('option', {
+        value: sheetName
+      }, sheetName);
+    });
+
+    // Trigger the sheet change
+    sheetSelectChange();
   },
 
   readData: function(file) {
@@ -126,53 +186,8 @@ ExcelApp.prototype = {
       that.dataDropDom.addClassName('dropped');
       that.dataDropDom.innerHTML = 'Data Sheets: ' + that.dataSheets.join(', ');
 
-      function sheetSelectChange() {
-        var select = that.sheetSelectorDOM;
-        var selectedSheetName = select.options[select.selectedIndex].value;
-        var worksheet = that.wbData.Sheets[selectedSheetName];
-
-        console.log(worksheet);
-        console.log(that.sheetToArray(worksheet));
-
-        // Render the column select
-        if (that.columnSelectorDOM) {
-          while (that.columnSelectorDOM.options.length > 0) {
-            that.columnSelectorDOM.remove(0);
-          }
-          that.columnSelectorDOM.selectedIndex = 0;
-        } else {
-          that.columnSelectorDOM = that.actionContainerDOM.createChild('select');
-        }
-
-        // Render the column options
-        var cols = that.getColumns(worksheet);
-        cols.forEach(function(col) {
-          that.columnSelectorDOM.createChild('option', {
-            value: col
-          }, col);
-        });
-      };
-
       // Render the sheet select
-      if (that.sheetSelectorDOM) {
-        while (that.sheetSelectorDOM.options.length > 0) {
-          that.sheetSelectorDOM.remove(0);
-        }
-        that.sheetSelectorDOM.selectedIndex = 0;
-      } else {
-        that.sheetSelectorDOM = that.actionContainerDOM.createChild('select');
-        that.sheetSelectorDOM.addEventListener('change', sheetSelectChange, false);
-      }
-
-      // Render the sheet options
-      workbook.SheetNames.forEach(function(sheetName) {
-        that.sheetSelectorDOM.createChild('option', {
-          value: sheetName
-        }, sheetName);
-      });
-
-      // Trigger the sheet change
-      sheetSelectChange();
+      that.renderSheetSelect(workbook);
 
       that.enableProcessButton();
     });
