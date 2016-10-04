@@ -1,3 +1,8 @@
+a {
+  color: #00f;
+  text-decoration: underline;
+}
+
 .section {
   margin: 10px;
 }
@@ -5,6 +10,10 @@
 .section .title {
   padding: 0px 0px 10px 0px; 
   font-weight: bold;
+}
+
+.actions {
+  line-height: 38px;
 }
 
 .file-name {
