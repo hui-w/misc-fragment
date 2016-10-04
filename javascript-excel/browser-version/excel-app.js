@@ -215,9 +215,17 @@ ExcelApp.prototype = {
   },
 
   render: function(dom) {
-    dom.createChild('div', {
+    var header = dom.createChild('div', {
       class: 'section'
-    }, 'Supported File Types: [XLSX / XLSM / XLSB / ODS / XLS / XML]');
+    }, 'Supported File Types: [XLSX / XLSM / XLSB / ODS / XLS / XML] - Sample Files:[');
+    header.createChild('a', {
+      href: 'ProjectTracker.xlsx'
+    }, 'Data');
+    header.createChild('span', null, ', ');
+    header.createChild('a', {
+      href: 'ProjectSubList.xlsx'
+    }, 'Sub Collection');
+    header.createChild('span', null, ']');
 
     // Data
     var dataSection = dom.createChild('div', {
