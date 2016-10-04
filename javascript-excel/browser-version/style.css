@@ -7,6 +7,10 @@
   font-weight: bold;
 }
 
+.actions {
+  line-height: 38px;
+}
+
 .file-name {
   color: #f30;
   font-weight: normal;

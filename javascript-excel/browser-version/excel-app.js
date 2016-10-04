@@ -8,6 +8,7 @@ function ExcelApp() {
   this.subCollections = [];
 
   // Sheet array
+  this.sheetInfo = null;
   this.sheetArray = null;
 
   // Dom objects
@@ -51,9 +52,7 @@ ExcelApp.prototype = {
     };
   },
 
-  sheetToArray: function(worksheet) {
-    var sheetArray = [];
-
+  getSheetInfo: function(worksheet) {
     var colKeys = [];
     var rowKeys = [];
 
@@ -80,6 +79,19 @@ ExcelApp.prototype = {
       }
     }
 
+    return {
+      colKeys: colKeys,
+      rowKeys: rowKeys
+    }; 
+  },
+
+  sheetToArray: function(worksheet) {
+    var sheetArray = [];
+
+    var sheetInfo = this.getSheetInfo(worksheet);
+    var colKeys = sheetInfo.colKeys;
+    var rowKeys = sheetInfo.rowKeys;
+
     // Init the array
     for (var row = 0; row < rowKeys.length; row ++) {
       var rowArray = [];
@@ -96,26 +108,10 @@ ExcelApp.prototype = {
     }
 
     return {
-      colKeys: colKeys,
       rowKeys: rowKeys,
+      colKeys: colKeys,
       sheetArray: sheetArray
     };
-  },
-
-  getColumns: function(worksheet) {
-    var colKeys = [];
-    var colObj = {};
-    for (var cellName in worksheet) {
-      if (cellName[0] === '!') {
-        continue
-      };
-      var col = this.getCellInfo(cellName).col;
-      if (!colObj[col]) {
-        colObj[col] = true;
-        colKeys.push(col);
-      }
-    }
-    return colKeys;
   },
 
   renderColumnSelect: function(worksheet) {
@@ -128,15 +124,18 @@ ExcelApp.prototype = {
       }
       this.columnSelectorDOM.selectedIndex = 0;
     } else {
+      this.actionContainerDOM.createChild('span', {}, 'where column ');
       this.columnSelectorDOM = this.actionContainerDOM.createChild('select');
+      this.actionContainerDOM.createChild('span', {}, ' is in the sub collections.');
     }
 
     // Render the column options
-    var cols = this.getColumns(worksheet);
-    cols.forEach(function(col) {
+    var sheetInfo = this.getSheetInfo(worksheet);
+    var colKeys = sheetInfo.colKeys;
+    colKeys.forEach(function(colKey) {
       that.columnSelectorDOM.createChild('option', {
-        value: col
-      }, col);
+        value: colKey
+      }, colKey);
     });
   },
 
@@ -146,9 +145,6 @@ ExcelApp.prototype = {
       var select = that.sheetSelectorDOM;
       var selectedSheetName = select.options[select.selectedIndex].value;
       var worksheet = that.wbData.Sheets[selectedSheetName];
-
-      console.log(worksheet);
-      console.log(that.sheetToArray(worksheet));
 
       that.renderColumnSelect(worksheet);
     };
@@ -160,6 +156,7 @@ ExcelApp.prototype = {
       }
       this.sheetSelectorDOM.selectedIndex = 0;
     } else {
+      this.actionContainerDOM.createChild('span', {}, 'Find rows from sheet ');
       this.sheetSelectorDOM = this.actionContainerDOM.createChild('select');
       this.sheetSelectorDOM.addEventListener('change', sheetSelectChange, false);
     }
@@ -238,7 +235,7 @@ ExcelApp.prototype = {
 
     // Select container
     this.actionContainerDOM = dom.createChild('div', {
-      class: 'section'
+      class: 'section actions'
     });
 
     // Sub
@@ -334,9 +331,9 @@ ExcelApp.prototype = {
     var worksheet = this.wbData.Sheets[sheetName];
 
     // Rows to export
-    var rows = [];
+    var rowIndexToExport = [];
 
-    // Find rows
+    // Find rows to be exported
     for (z in worksheet) {
       if (z[0] === '!') {
         continue;
@@ -348,31 +345,23 @@ ExcelApp.prototype = {
       }
 
       if (this.foundInSub(worksheet[z].v)) {
-        rows.push(cellInfo.row);
+        rowIndexToExport.push(cellInfo.row);
       }
     }
 
     // Export rows
-    var cols = this.getColumns(worksheet);
-
-    var data = [];
-    for (var i = 0; i < rows.length; i++) {
-      var dataRow = [];
-      for (var j = 0; j < cols.length; j++) {
-        dataRow.push(null);
-      }
-      data.push(dataRow);
+    var dataToExport = [];
+    var array = this.sheetToArray(worksheet);
+    var sheetArray = array.sheetArray;
+    for (var i = 0; i < rowIndexToExport.length; i++) {
+      var rowIndex = rowIndexToExport[i];
+      dataToExport.push(sheetArray[rowIndex]);
     }
 
-    for (var i = 0; i < rows.length; i++) {
-      for (var j = 0; j < cols.length; j++) {
-        var columnName = cols[j] + rows[i];
-        if (worksheet[columnName]) {
-          data[i][j] = worksheet[columnName].v;
-        }
-      }
-    }
+    this.renderTable(dataToExport);
+  },
 
+  renderTable: function(dataToExport) {
     // Render table
     if (this.outputTableDom) {
       this.tableContainerDom.removeChild(this.outputTableDom);
@@ -382,10 +371,10 @@ ExcelApp.prototype = {
       class: 'output-table',
       id: 'output-table'
     });
-    for (var i = 0; i < data.length; i++) {
+    for (var i = 0; i < dataToExport.length; i++) {
       var tr = this.outputTableDom.createChild('tr');
-      for (var j = 0; j < data[i].length; j++) {
-        tr.createChild('td', {}, data[i][j] ? data[i][j] : '');
+      for (var j = 0; j < dataToExport[i].length; j++) {
+        tr.createChild('td', {}, dataToExport[i][j] ? dataToExport[i][j] : '');
       }
     }
 
