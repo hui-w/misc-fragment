@@ -1,5 +1,5 @@
 var XLSX = require('XLSX');
-var workbook = XLSX.readFile('../AttendanceRecord.xlsx');
+var workbook = XLSX.readFile('./AttendanceRecord.xlsx');
 
 
 var first_sheet_name = workbook.SheetNames[0];
