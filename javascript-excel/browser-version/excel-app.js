@@ -48,6 +48,57 @@ ExcelApp.prototype = {
     };
   },
 
+  sheetToArray: function(worksheet) {
+    var sheetArray = [];
+
+    var colKeys = [];
+    var rowKeys = [];
+
+    var colObj = {};
+    var rowObj = {};
+
+    // Get the array of column and row names
+    for (var cellKey in worksheet) {
+      if (cellKey[0] === '!') {
+        continue
+      };
+      var info = this.getCellInfo(cellKey);
+
+      // Check the column: "A-Z"
+      if (!colObj[info.col]) {
+        colObj[info.col] = true;
+        colKeys.push(info.col);
+      }
+
+      // Check the row: "0-9"
+      if (!rowObj[info.row]) {
+        rowObj[info.row] = true;
+        rowKeys.push(info.row);
+      }
+    }
+
+    // Init the array
+    for (var row = 0; row < rowKeys.length; row ++) {
+      var rowArray = [];
+      for (var col = 0; col < colKeys.length; col ++) {
+        var colKey = colKeys[col] + rowKeys[row];
+        if (worksheet[colKey]) {
+          rowArray.push(worksheet[colKey].v);
+        } else {
+          rowArray.push('');
+        }
+        
+      }
+      sheetArray.push(rowArray);
+    }
+
+    return {
+      colKeys: colKeys,
+      rowKeys: rowKeys,
+      sheetArray: sheetArray
+    };
+  },
+
   getColumns: function(worksheet) {
     var columnsArray = [];
     var columnsObj = {};
@@ -79,6 +130,9 @@ ExcelApp.prototype = {
         var select = that.sheetSelectorDOM;
         var selectedSheetName = select.options[select.selectedIndex].value;
         var worksheet = that.wbData.Sheets[selectedSheetName];
+
+        console.log(worksheet);
+        console.log(that.sheetToArray(worksheet));
 
         // Render the column select
         if (that.columnSelectorDOM) {
