@@ -19,6 +19,7 @@ function ExcelApp() {
   this.actionContainerDOM = null;
   this.sheetSelectorDOM = null;
   this.columnSelectorDOM = null;
+  this.rowSelectorDOM = null;
   this.processButton = null;
   this.exportButton = null;
   this.tableContainerDom = null;
@@ -133,7 +134,7 @@ ExcelApp.prototype = {
     };
   },
 
-  renderColumnSelect: function(worksheet) {
+  renderColumnSelect: function(sheetInfo) {
     var that = this;
 
     // Render the column select
@@ -143,18 +144,41 @@ ExcelApp.prototype = {
       }
       this.columnSelectorDOM.selectedIndex = 0;
     } else {
-      this.actionContainerDOM.createChild('span', {}, 'where column ');
+      this.actionContainerDOM.createChild('span', {}, 'WHERE column ');
       this.columnSelectorDOM = this.actionContainerDOM.createChild('select');
-      this.actionContainerDOM.createChild('span', {}, ' is in the sub collections.');
+      this.actionContainerDOM.createChild('span', {}, ' is in the sub collections ');
     }
 
     // Render the column options
-    var sheetInfo = this.getSheetInfo(worksheet);
     var colKeys = sheetInfo.colKeys;
     colKeys.forEach(function(colKey) {
       that.columnSelectorDOM.createChild('option', {
         value: colKey
       }, colKey);
+    });
+  },
+
+  renderRowSelect: function(sheetInfo) {
+    var that = this;
+
+    // Render the row select
+    if (this.rowSelectorDOM) {
+      while (this.rowSelectorDOM.options.length > 0) {
+        this.rowSelectorDOM.remove(0);
+      }
+      this.rowSelectorDOM.selectedIndex = 0;
+    } else {
+      this.actionContainerDOM.createChild('span', {}, 'WITH row ');
+      this.rowSelectorDOM = this.actionContainerDOM.createChild('select');
+      this.actionContainerDOM.createChild('span', {}, ' as the export header.');
+    }
+
+    // Render the column options
+    var rowKeys = sheetInfo.rowKeys;
+    rowKeys.forEach(function(rowKey) {
+      that.rowSelectorDOM.createChild('option', {
+        value: rowKey
+      }, rowKey);
     });
   },
 
@@ -165,7 +189,10 @@ ExcelApp.prototype = {
       var selectedSheetName = select.options[select.selectedIndex].value;
       var worksheet = that.wbData.Sheets[selectedSheetName];
 
-      that.renderColumnSelect(worksheet);
+      // Render the row and col selection
+      var sheetInfo = that.getSheetInfo(worksheet);
+      that.renderColumnSelect(sheetInfo);
+      that.renderRowSelect(sheetInfo);
     };
 
     // Render the sheet select
@@ -175,7 +202,7 @@ ExcelApp.prototype = {
       }
       this.sheetSelectorDOM.selectedIndex = 0;
     } else {
-      this.actionContainerDOM.createChild('span', {}, 'Find rows from sheet ');
+      this.actionContainerDOM.createChild('span', {}, 'SELECT rows from sheet ');
       this.sheetSelectorDOM = this.actionContainerDOM.createChild('select');
       this.sheetSelectorDOM.addEventListener('change', sheetSelectChange, false);
     }
@@ -279,9 +306,15 @@ ExcelApp.prototype = {
       class: 'drop'
     }, 'Drop a file here');
 
-    // Table
-    this.tableContainerDom = dom.createChild('div', {
+    // Output
+    var outSection = dom.createChild('div', {
       class: 'section'
+    });
+    outSection.createChild('div', {
+      class: 'title'
+    }, 'Output:');
+    this.tableContainerDom = dom.createChild('div', {
+      class: 'section output'
     });
 
     // Bind the drop handlers
@@ -352,40 +385,41 @@ ExcelApp.prototype = {
 
   processData: function() {
     var sheetName = this.sheetSelectorDOM.options[this.sheetSelectorDOM.selectedIndex].value;
-    var columnName = this.columnSelectorDOM.options[this.columnSelectorDOM.selectedIndex].value;
+    var colKey = this.columnSelectorDOM.options[this.columnSelectorDOM.selectedIndex].value;
+    var rowKey = this.rowSelectorDOM.options[this.rowSelectorDOM.selectedIndex].value;
 
     var subCollections = this.subCollections;
     var worksheet = this.wbData.Sheets[sheetName];
 
-    // Rows to export
-    var rowIndexToExport = [];
-
-    // Find rows to be exported
-    for (z in worksheet) {
-      if (z[0] === '!') {
-        continue;
-      }
-
-      var cellInfo = this.getCellInfo(z);
-      if (cellInfo.col !== columnName) {
-        continue;
-      }
-
-      if (this.foundInSub(worksheet[z].v)) {
-        rowIndexToExport.push(cellInfo.row);
-      }
-    }
-
-    // Export rows
-    var dataToExport = [];
+    // Get the sheet as array
     var array = this.sheetToArray(worksheet);
+    var rowKeys = array.rowKeys;
+    var colKeys = array.colKeys;
     var sheetArray = array.sheetArray;
-    for (var i = 0; i < rowIndexToExport.length; i++) {
-      var rowIndex = rowIndexToExport[i];
-      dataToExport.push(sheetArray[rowIndex]);
-    }
 
-    this.renderTable(dataToExport);
+    // Get the selected column and row index
+    var colIndex = colKeys.findIndex(function(item) {
+      return item === colKey;
+    });
+    var rowIndex = rowKeys.findIndex(function(item) {
+      return item === rowKey;
+    });
+
+    var exportRows = [];
+
+    // Add the header row
+    exportRows.push(sheetArray[rowIndex]);
+
+    // Go through the collection
+    subCollections.forEach(function(item, index) {
+      for (var i = 0; i< sheetArray.length; i++) {
+        if (sheetArray[i][colIndex] === item) {
+          exportRows.push(sheetArray[i]);
+        }
+      }
+    });
+
+    this.renderTable(exportRows);
   },
 
   renderTable: function(dataToExport) {
@@ -395,7 +429,6 @@ ExcelApp.prototype = {
     }
 
     this.outputTableDom = this.tableContainerDom.createChild('table', {
-      class: 'output-table',
       id: 'output-table'
     });
     for (var i = 0; i < dataToExport.length; i++) {
