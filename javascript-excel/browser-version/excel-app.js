@@ -26,21 +26,40 @@ function ExcelApp() {
 };
 
 ExcelApp.prototype = {
+  binaryToWorkbook: function(binary) {
+    // If binary string, read with type 'binary'
+    var workbook = XLSX.read(binary, {
+      type: 'binary'
+    });
+
+    return workbook;
+  },
+
   getWorkbook: function(file, onComplete) {
+    var that = this;
     var reader = new FileReader();
-    var name = file.name;
-    reader.onload = function(e) {
-      var data = e.target.result;
 
-      // If binary string, read with type 'binary'
-      var workbook = XLSX.read(data, {
-        type: 'binary'
-      });
-
-      // Start the job
-      onComplete(workbook);
-    };
-    reader.readAsBinaryString(file);
+    if (reader.readAsBinaryString) {
+      reader.onload = function(e) {
+        var data = e.target.result;
+        var workbook = that.binaryToWorkbook(data);
+        onComplete(workbook);
+      };
+      reader.readAsBinaryString(file);
+    } else {
+      // For IE0/11, use readAsArrayBuffer() instead
+      reader.onload = function(e) {
+        var data = "";
+        var bytes = new Uint8Array(e.target.result);
+        var length = bytes.byteLength;
+        for (var i = 0; i < length; i++) {
+            data += String.fromCharCode(bytes[i]);
+        }
+        var workbook = that.binaryToWorkbook(data);
+        onComplete(workbook);
+      };
+      reader.readAsArrayBuffer(file);
+    }
   },
 
   getCellInfo: function(cellName) {
