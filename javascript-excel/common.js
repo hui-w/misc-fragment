@@ -94,15 +94,6 @@ Element.prototype.updateStyle = function(key, value) {
   this.setAttribute("style", newStyle)
 };
 
-Array.prototype.each = function(func, param) {
-  var items = this.findItem(param);
-  for (var i = 0; i < items.length; i++) {
-    if (typeof func == "function") {
-      func.call(items[i]);
-    }
-  }
-};
-
 String.prototype.format = function() {
   var args = arguments;
   return this.replace(/\{(\d+)\}/g,
