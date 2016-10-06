@@ -1,3 +1,812 @@
+// From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
+if (!Object.keys) {
+  Object.keys = (function () {
+    var hasOwnProperty = Object.prototype.hasOwnProperty,
+        hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString'),
+        dontEnums = [
+          'toString',
+          'toLocaleString',
+          'valueOf',
+          'hasOwnProperty',
+          'isPrototypeOf',
+          'propertyIsEnumerable',
+          'constructor'
+        ],
+        dontEnumsLength = dontEnums.length;
+ 
+    return function (obj) {
+      if (typeof obj !== 'object' && typeof obj !== 'function' || obj === null) throw new TypeError('Object.keys called on non-object');
+ 
+      var result = [];
+ 
+      for (var prop in obj) {
+        if (hasOwnProperty.call(obj, prop)) result.push(prop);
+      }
+ 
+      if (hasDontEnumBug) {
+        for (var i=0; i < dontEnumsLength; i++) {
+          if (hasOwnProperty.call(obj, dontEnums[i])) result.push(dontEnums[i]);
+        }
+      }
+      return result;
+    };
+  })();
+}
+
+// From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
+if (!Array.prototype.filter)
+{
+  Array.prototype.filter = function(fun /*, thisp */)
+  {
+    "use strict";
+ 
+    if (this == null)
+      throw new TypeError();
+ 
+    var t = Object(this);
+    var len = t.length >>> 0;
+    if (typeof fun != "function")
+      throw new TypeError();
+ 
+    var res = [];
+    var thisp = arguments[1];
+    for (var i = 0; i < len; i++)
+    {
+      if (i in t)
+      {
+        var val = t[i]; // in case fun mutates this
+        if (fun.call(thisp, val, i, t))
+          res.push(val);
+      }
+    }
+ 
+    return res;
+  };
+}
+
+// From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim
+if (!String.prototype.trim) {
+  String.prototype.trim = function () {
+    return this.replace(/^\s+|\s+$/g, '');
+  };
+}
+
+// From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach
+if (!Array.prototype.forEach)
+{
+  Array.prototype.forEach = function(fun /*, thisArg */)
+  {
+    "use strict";
+
+    if (this === void 0 || this === null)
+      throw new TypeError();
+
+    var t = Object(this);
+    var len = t.length >>> 0;
+    if (typeof fun !== "function")
+      throw new TypeError();
+
+    var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
+    for (var i = 0; i < len; i++)
+    {
+      if (i in t)
+        fun.call(thisArg, t[i], i, t);
+    }
+  };
+}
+
+// Production steps of ECMA-262, Edition 5, 15.4.4.19
+// Reference: http://es5.github.com/#x15.4.4.19
+if (!Array.prototype.map) {
+  Array.prototype.map = function(callback, thisArg) {
+ 
+    var T, A, k;
+ 
+    if (this == null) {
+      throw new TypeError(" this is null or not defined");
+    }
+ 
+    // 1. Let O be the result of calling ToObject passing the |this| value as the argument.
+    var O = Object(this);
+ 
+    // 2. Let lenValue be the result of calling the Get internal method of O with the argument "length".
+    // 3. Let len be ToUint32(lenValue).
+    var len = O.length >>> 0;
+ 
+    // 4. If IsCallable(callback) is false, throw a TypeError exception.
+    // See: http://es5.github.com/#x9.11
+    if (typeof callback !== "function") {
+      throw new TypeError(callback + " is not a function");
+    }
+ 
+    // 5. If thisArg was supplied, let T be thisArg; else let T be undefined.
+    if (thisArg) {
+      T = thisArg;
+    }
+ 
+    // 6. Let A be a new array created as if by the expression new Array(len) where Array is
+    // the standard built-in constructor with that name and len is the value of len.
+    A = new Array(len);
+ 
+    // 7. Let k be 0
+    k = 0;
+ 
+    // 8. Repeat, while k < len
+    while(k < len) {
+ 
+      var kValue, mappedValue;
+ 
+      // a. Let Pk be ToString(k).
+      //   This is implicit for LHS operands of the in operator
+      // b. Let kPresent be the result of calling the HasProperty internal method of O with argument Pk.
+      //   This step can be combined with c
+      // c. If kPresent is true, then
+      if (k in O) {
+ 
+        // i. Let kValue be the result of calling the Get internal method of O with argument Pk.
+        kValue = O[ k ];
+ 
+        // ii. Let mappedValue be the result of calling the Call internal method of callback
+        // with T as the this value and argument list containing kValue, k, and O.
+        mappedValue = callback.call(T, kValue, k, O);
+ 
+        // iii. Call the DefineOwnProperty internal method of A with arguments
+        // Pk, Property Descriptor {Value: mappedValue, : true, Enumerable: true, Configurable: true},
+        // and false.
+ 
+        // In browsers that support Object.defineProperty, use the following:
+        // Object.defineProperty(A, Pk, { value: mappedValue, writable: true, enumerable: true, configurable: true });
+ 
+        // For best browser support, use the following:
+        A[ k ] = mappedValue;
+      }
+      // d. Increase k by 1.
+      k++;
+    }
+ 
+    // 9. return A
+    return A;
+  };      
+}
+
+// From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
+if (!Array.prototype.indexOf) {
+  Array.prototype.indexOf = function (searchElement, fromIndex) {
+    if ( this === undefined || this === null ) {
+      throw new TypeError( '"this" is null or not defined' );
+    }
+
+    var length = this.length >>> 0; // Hack to convert object.length to a UInt32
+
+    fromIndex = +fromIndex || 0;
+
+    if (Math.abs(fromIndex) === Infinity) {
+      fromIndex = 0;
+    }
+
+    if (fromIndex < 0) {
+      fromIndex += length;
+      if (fromIndex < 0) {
+        fromIndex = 0;
+      }
+    }
+
+    for (;fromIndex < length; fromIndex++) {
+      if (this[fromIndex] === searchElement) {
+        return fromIndex;
+      }
+    }
+
+    return -1;
+  };
+}
+// Based on https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray
+
+if (! Array.isArray) {
+    Array.isArray = function(obj) {
+        return Object.prototype.toString.call(obj) === "[object Array]";
+    };
+}
+
+// https://github.com/ttaubert/node-arraybuffer-slice
+// (c) 2013 Tim Taubert <tim@timtaubert.de>
+// arraybuffer-slice may be freely distributed under the MIT license.
+
+"use strict";
+
+if (typeof ArrayBuffer !== 'undefined' && !ArrayBuffer.prototype.slice) {
+  ArrayBuffer.prototype.slice = function (begin, end) {
+    begin = (begin|0) || 0;
+    var num = this.byteLength;
+    end = end === (void 0) ? num : (end|0);
+
+    // Handle negative values.
+    if (begin < 0) begin += num;
+    if (end < 0) end += num;
+
+    if (num === 0 || begin >= num || begin >= end) {
+      return new ArrayBuffer(0);
+    }
+
+    var length = Math.min(num - begin, end - begin);
+    var target = new ArrayBuffer(length);
+    var targetArray = new Uint8Array(target);
+    targetArray.set(new Uint8Array(this, begin, length));
+    return target;
+  };
+}
+/* Blob.js
+ * A Blob implementation.
+ * 2014-05-27
+ * 
+ * By Eli Grey, http://eligrey.com
+ * By Devin Samarin, https://github.com/eboyjr
+ * License: X11/MIT
+ *   See LICENSE.md
+ */
+
+/*global self, unescape */
+/*jslint bitwise: true, regexp: true, confusion: true, es5: true, vars: true, white: true,
+  plusplus: true */
+
+/*! @source http://purl.eligrey.com/github/Blob.js/blob/master/Blob.js */
+
+(function (view) {
+	"use strict";
+
+	view.URL = view.URL || view.webkitURL;
+
+	if (view.Blob && view.URL) {
+		try {
+			new Blob;
+			return;
+		} catch (e) {}
+	}
+
+	// Internally we use a BlobBuilder implementation to base Blob off of
+	// in order to support older browsers that only have BlobBuilder
+	var BlobBuilder = view.BlobBuilder || view.WebKitBlobBuilder || view.MozBlobBuilder || (function(view) {
+		var
+			  get_class = function(object) {
+				return Object.prototype.toString.call(object).match(/^\[object\s(.*)\]$/)[1];
+			}
+			, FakeBlobBuilder = function BlobBuilder() {
+				this.data = [];
+			}
+			, FakeBlob = function Blob(data, type, encoding) {
+				this.data = data;
+				this.size = data.length;
+				this.type = type;
+				this.encoding = encoding;
+			}
+			, FBB_proto = FakeBlobBuilder.prototype
+			, FB_proto = FakeBlob.prototype
+			, FileReaderSync = view.FileReaderSync
+			, FileException = function(type) {
+				this.code = this[this.name = type];
+			}
+			, file_ex_codes = (
+				  "NOT_FOUND_ERR SECURITY_ERR ABORT_ERR NOT_READABLE_ERR ENCODING_ERR "
+				+ "NO_MODIFICATION_ALLOWED_ERR INVALID_STATE_ERR SYNTAX_ERR"
+			).split(" ")
+			, file_ex_code = file_ex_codes.length
+			, real_URL = view.URL || view.webkitURL || view
+			, real_create_object_URL = real_URL.createObjectURL
+			, real_revoke_object_URL = real_URL.revokeObjectURL
+			, URL = real_URL
+			, btoa = view.btoa
+			, atob = view.atob
+			
+			, ArrayBuffer = view.ArrayBuffer
+			, Uint8Array = view.Uint8Array
+		;
+		FakeBlob.fake = FB_proto.fake = true;
+		while (file_ex_code--) {
+			FileException.prototype[file_ex_codes[file_ex_code]] = file_ex_code + 1;
+		}
+		if (!real_URL.createObjectURL) {
+			URL = view.URL = {};
+		}
+		URL.createObjectURL = function(blob) {
+			var
+				  type = blob.type
+				, data_URI_header
+			;
+			if (type === null) {
+				type = "application/octet-stream";
+			}
+			if (blob instanceof FakeBlob) {
+				data_URI_header = "data:" + type;
+				if (blob.encoding === "base64") {
+					return data_URI_header + ";base64," + blob.data;
+				} else if (blob.encoding === "URI") {
+					return data_URI_header + "," + decodeURIComponent(blob.data);
+				} if (btoa) {
+					return data_URI_header + ";base64," + btoa(blob.data);
+				} else {
+					return data_URI_header + "," + encodeURIComponent(blob.data);
+				}
+			} else if (real_create_object_URL) {
+				return real_create_object_URL.call(real_URL, blob);
+			}
+		};
+		URL.revokeObjectURL = function(object_URL) {
+			if (object_URL.substring(0, 5) !== "data:" && real_revoke_object_URL) {
+				real_revoke_object_URL.call(real_URL, object_URL);
+			}
+		};
+		FBB_proto.append = function(data/*, endings*/) {
+			var bb = this.data;
+			// decode data to a binary string
+			if (Uint8Array && (data instanceof ArrayBuffer || data instanceof Uint8Array)) {
+				var
+					  str = ""
+					, buf = new Uint8Array(data)
+					, i = 0
+					, buf_len = buf.length
+				;
+				for (; i < buf_len; i++) {
+					str += String.fromCharCode(buf[i]);
+				}
+				bb.push(str);
+			} else if (get_class(data) === "Blob" || get_class(data) === "File") {
+				if (FileReaderSync) {
+					var fr = new FileReaderSync;
+					bb.push(fr.readAsBinaryString(data));
+				} else {
+					// async FileReader won't work as BlobBuilder is sync
+					throw new FileException("NOT_READABLE_ERR");
+				}
+			} else if (data instanceof FakeBlob) {
+				if (data.encoding === "base64" && atob) {
+					bb.push(atob(data.data));
+				} else if (data.encoding === "URI") {
+					bb.push(decodeURIComponent(data.data));
+				} else if (data.encoding === "raw") {
+					bb.push(data.data);
+				}
+			} else {
+				if (typeof data !== "string") {
+					data += ""; // convert unsupported types to strings
+				}
+				// decode UTF-16 to binary string
+				bb.push(unescape(encodeURIComponent(data)));
+			}
+		};
+		FBB_proto.getBlob = function(type) {
+			if (!arguments.length) {
+				type = null;
+			}
+			return new FakeBlob(this.data.join(""), type, "raw");
+		};
+		FBB_proto.toString = function() {
+			return "[object BlobBuilder]";
+		};
+		FB_proto.slice = function(start, end, type) {
+			var args = arguments.length;
+			if (args < 3) {
+				type = null;
+			}
+			return new FakeBlob(
+				  this.data.slice(start, args > 1 ? end : this.data.length)
+				, type
+				, this.encoding
+			);
+		};
+		FB_proto.toString = function() {
+			return "[object Blob]";
+		};
+		FB_proto.close = function() {
+			this.size = this.data.length = 0;
+		};
+		return FakeBlobBuilder;
+	}(view));
+
+	view.Blob = function Blob(blobParts, options) {
+		var type = options ? (options.type || "") : "";
+		var builder = new BlobBuilder();
+		if (blobParts) {
+			for (var i = 0, len = blobParts.length; i < len; i++) {
+				builder.append(blobParts[i]);
+			}
+		}
+		return builder.getBlob(type);
+	};
+}(typeof self !== "undefined" && self || typeof window !== "undefined" && window || this.content || this));
+/*! FileSaver.js
+ *  A saveAs() FileSaver implementation.
+ *  2014-01-24
+ *
+ *  By Eli Grey, http://eligrey.com
+ *  License: X11/MIT
+ *    See LICENSE.md
+ */
+
+/*global self */
+/*jslint bitwise: true, indent: 4, laxbreak: true, laxcomma: true, smarttabs: true, plusplus: true */
+
+/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
+
+var saveAs = saveAs
+  // IE 10+ (native saveAs)
+  || (typeof navigator !== "undefined" &&
+      navigator.msSaveOrOpenBlob && navigator.msSaveOrOpenBlob.bind(navigator))
+  // Everyone else
+  || (function(view) {
+	"use strict";
+	// IE <10 is explicitly unsupported
+	if (typeof navigator !== "undefined" &&
+	    /MSIE [1-9]\./.test(navigator.userAgent)) {
+		return;
+	}
+	var
+		  doc = view.document
+		  // only get URL when necessary in case BlobBuilder.js hasn't overridden it yet
+		, get_URL = function() {
+			return view.URL || view.webkitURL || view;
+		}
+		, URL = view.URL || view.webkitURL || view
+		, save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a")
+		, can_use_save_link = !view.externalHost && "download" in save_link
+		, click = function(node) {
+			var event = doc.createEvent("MouseEvents");
+			event.initMouseEvent(
+				"click", true, false, view, 0, 0, 0, 0, 0
+				, false, false, false, false, 0, null
+			);
+			node.dispatchEvent(event);
+		}
+		, webkit_req_fs = view.webkitRequestFileSystem
+		, req_fs = view.requestFileSystem || webkit_req_fs || view.mozRequestFileSystem
+		, throw_outside = function(ex) {
+			(view.setImmediate || view.setTimeout)(function() {
+				throw ex;
+			}, 0);
+		}
+		, force_saveable_type = "application/octet-stream"
+		, fs_min_size = 0
+		, deletion_queue = []
+		, process_deletion_queue = function() {
+			var i = deletion_queue.length;
+			while (i--) {
+				var file = deletion_queue[i];
+				if (typeof file === "string") { // file is an object URL
+					URL.revokeObjectURL(file);
+				} else { // file is a File
+					file.remove();
+				}
+			}
+			deletion_queue.length = 0; // clear queue
+		}
+		, dispatch = function(filesaver, event_types, event) {
+			event_types = [].concat(event_types);
+			var i = event_types.length;
+			while (i--) {
+				var listener = filesaver["on" + event_types[i]];
+				if (typeof listener === "function") {
+					try {
+						listener.call(filesaver, event || filesaver);
+					} catch (ex) {
+						throw_outside(ex);
+					}
+				}
+			}
+		}
+		, FileSaver = function(blob, name) {
+			// First try a.download, then web filesystem, then object URLs
+			var
+				  filesaver = this
+				, type = blob.type
+				, blob_changed = false
+				, object_url
+				, target_view
+				, get_object_url = function() {
+					var object_url = get_URL().createObjectURL(blob);
+					deletion_queue.push(object_url);
+					return object_url;
+				}
+				, dispatch_all = function() {
+					dispatch(filesaver, "writestart progress write writeend".split(" "));
+				}
+				// on any filesys errors revert to saving with object URLs
+				, fs_error = function() {
+					// don't create more object URLs than needed
+					if (blob_changed || !object_url) {
+						object_url = get_object_url(blob);
+					}
+					if (target_view) {
+						target_view.location.href = object_url;
+					} else {
+						if(navigator.userAgent.match(/7\.[\d\s\.]+Safari/)	// is Safari 7.x
+								&& typeof window.FileReader !== "undefined"			// can convert to base64
+								&& blob.size <= 1024*1024*150										// file size max 150MB
+								) {	
+							var reader = new window.FileReader();
+							reader.readAsDataURL(blob);
+							reader.onloadend = function() {
+								var frame = doc.createElement("iframe");
+								frame.src = reader.result;
+								frame.style.display = "none";
+								doc.body.appendChild(frame);
+								dispatch_all();
+								return;
+							}
+							filesaver.readyState = filesaver.DONE;
+							filesaver.savedAs = filesaver.SAVEDASUNKNOWN;
+							return;
+						}
+						else {
+							window.open(object_url, "_blank");
+							filesaver.readyState = filesaver.DONE;
+							filesaver.savedAs = filesaver.SAVEDASBLOB;
+							dispatch_all();
+							return;
+						}
+					}
+				}
+				, abortable = function(func) {
+					return function() {
+						if (filesaver.readyState !== filesaver.DONE) {
+							return func.apply(this, arguments);
+						}
+					};
+				}
+				, create_if_not_found = {create: true, exclusive: false}
+				, slice
+			;
+			filesaver.readyState = filesaver.INIT;
+			if (!name) {
+				name = "download";
+			}
+			if (can_use_save_link) {
+				object_url = get_object_url(blob);
+				// FF for Android has a nasty garbage collection mechanism
+				// that turns all objects that are not pure javascript into 'deadObject'
+				// this means `doc` and `save_link` are unusable and need to be recreated
+				// `view` is usable though:
+				doc = view.document;
+				save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a");
+				save_link.href = object_url;
+				save_link.download = name;
+				var event = doc.createEvent("MouseEvents");
+				event.initMouseEvent(
+					"click", true, false, view, 0, 0, 0, 0, 0
+					, false, false, false, false, 0, null
+				);
+				save_link.dispatchEvent(event);
+				filesaver.readyState = filesaver.DONE;
+				filesaver.savedAs = filesaver.SAVEDASBLOB;
+				dispatch_all();
+				return;
+			}
+			// Object and web filesystem URLs have a problem saving in Google Chrome when
+			// viewed in a tab, so I force save with application/octet-stream
+			// http://code.google.com/p/chromium/issues/detail?id=91158
+			if (view.chrome && type && type !== force_saveable_type) {
+				slice = blob.slice || blob.webkitSlice;
+				blob = slice.call(blob, 0, blob.size, force_saveable_type);
+				blob_changed = true;
+			}
+			// Since I can't be sure that the guessed media type will trigger a download
+			// in WebKit, I append .download to the filename.
+			// https://bugs.webkit.org/show_bug.cgi?id=65440
+			if (webkit_req_fs && name !== "download") {
+				name += ".download";
+			}
+			if (type === force_saveable_type || webkit_req_fs) {
+				target_view = view;
+			}
+			if (!req_fs) {
+				fs_error();
+				return;
+			}
+			fs_min_size += blob.size;
+			req_fs(view.TEMPORARY, fs_min_size, abortable(function(fs) {
+				fs.root.getDirectory("saved", create_if_not_found, abortable(function(dir) {
+					var save = function() {
+						dir.getFile(name, create_if_not_found, abortable(function(file) {
+							file.createWriter(abortable(function(writer) {
+								writer.onwriteend = function(event) {
+									target_view.location.href = file.toURL();
+									deletion_queue.push(file);
+									filesaver.readyState = filesaver.DONE;
+									filesaver.savedAs = filesaver.SAVEDASBLOB;
+									dispatch(filesaver, "writeend", event);
+								};
+								writer.onerror = function() {
+									var error = writer.error;
+									if (error.code !== error.ABORT_ERR) {
+										fs_error();
+									}
+								};
+								"writestart progress write abort".split(" ").forEach(function(event) {
+									writer["on" + event] = filesaver["on" + event];
+								});
+								writer.write(blob);
+								filesaver.abort = function() {
+									writer.abort();
+									filesaver.readyState = filesaver.DONE;
+									filesaver.savedAs = filesaver.FAILED;
+								};
+								filesaver.readyState = filesaver.WRITING;
+							}), fs_error);
+						}), fs_error);
+					};
+					dir.getFile(name, {create: false}, abortable(function(file) {
+						// delete file if it already exists
+						file.remove();
+						save();
+					}), abortable(function(ex) {
+						if (ex.code === ex.NOT_FOUND_ERR) {
+							save();
+						} else {
+							fs_error();
+						}
+					}));
+				}), fs_error);
+			}), fs_error);
+		}
+		, FS_proto = FileSaver.prototype
+		, saveAs = function(blob, name) {
+			return new FileSaver(blob, name);
+		}
+	;
+	FS_proto.abort = function() {
+		var filesaver = this;
+		filesaver.readyState = filesaver.DONE;
+		filesaver.savedAs = filesaver.FAILED;
+		dispatch(filesaver, "abort");
+	};
+	FS_proto.readyState = FS_proto.INIT = 0;
+	FS_proto.WRITING = 1;
+	FS_proto.DONE = 2;
+	FS_proto.FAILED = -1;
+	FS_proto.SAVEDASBLOB = 1;
+	FS_proto.SAVEDASURI = 2;
+	FS_proto.SAVEDASUNKNOWN = 3;
+
+	FS_proto.error =
+	FS_proto.onwritestart =
+	FS_proto.onprogress =
+	FS_proto.onwrite =
+	FS_proto.onabort =
+	FS_proto.onerror =
+	FS_proto.onwriteend =
+		null;
+
+	view.addEventListener("unload", process_deletion_queue, false);
+	saveAs.unload = function() {
+		process_deletion_queue();
+		view.removeEventListener("unload", process_deletion_queue, false);
+	};
+	return saveAs;
+}(
+	   typeof self !== "undefined" && self
+	|| typeof window !== "undefined" && window
+	|| this.content
+));
+// `self` is undefined in Firefox for Android content script context
+// while `this` is nsIContentFrameMessageManager
+// with an attribute `content` that corresponds to the window
+
+if (typeof module !== "undefined" && module !== null) {
+  module.exports = saveAs;
+} else if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) {
+  define([], function() {
+    return saveAs;
+  });
+} else if(typeof Meteor !== 'undefined') { // make it available for Meteor
+  Meteor.saveAs = saveAs;
+}
+function generateArray(table) {
+    var out = [];
+    var rows = table.querySelectorAll('tr');
+    var ranges = [];
+    for (var R = 0; R < rows.length; ++R) {
+        var outRow = [];
+        var row = rows[R];
+        var columns = row.querySelectorAll('td');
+        for (var C = 0; C < columns.length; ++C) {
+            var cell = columns[C];
+            var colspan = cell.getAttribute('colspan');
+            var rowspan = cell.getAttribute('rowspan');
+            var cellValue = cell.innerText;
+            if(cellValue !== "" && cellValue == +cellValue) cellValue = +cellValue;
+
+            //Skip ranges
+            ranges.forEach(function(range) {
+                if(R >= range.s.r && R <= range.e.r && outRow.length >= range.s.c && outRow.length <= range.e.c) {
+                    for(var i = 0; i <= range.e.c - range.s.c; ++i) outRow.push(null);
+                }
+            });
+
+            //Handle Row Span
+            if (rowspan || colspan) {
+                rowspan = rowspan || 1;
+                colspan = colspan || 1;
+                ranges.push({s:{r:R, c:outRow.length},e:{r:R+rowspan-1, c:outRow.length+colspan-1}});
+            };
+            
+            //Handle Value
+            outRow.push(cellValue !== "" ? cellValue : null);
+            
+            //Handle Colspan
+            if (colspan) for (var k = 0; k < colspan - 1; ++k) outRow.push(null);
+        }
+        out.push(outRow);
+    }
+    return [out, ranges];
+};
+
+function datenum(v, date1904) {
+	if(date1904) v+=1462;
+	var epoch = Date.parse(v);
+	return (epoch - new Date(Date.UTC(1899, 11, 30))) / (24 * 60 * 60 * 1000);
+}
+ 
+function sheet_from_array_of_arrays(data, opts) {
+	var ws = {};
+	var range = {s: {c:10000000, r:10000000}, e: {c:0, r:0 }};
+	for(var R = 0; R != data.length; ++R) {
+		for(var C = 0; C != data[R].length; ++C) {
+			if(range.s.r > R) range.s.r = R;
+			if(range.s.c > C) range.s.c = C;
+			if(range.e.r < R) range.e.r = R;
+			if(range.e.c < C) range.e.c = C;
+			var cell = {v: data[R][C] };
+			if(cell.v == null) continue;
+			var cell_ref = XLSX.utils.encode_cell({c:C,r:R});
+			
+			if(typeof cell.v === 'number') cell.t = 'n';
+			else if(typeof cell.v === 'boolean') cell.t = 'b';
+			else if(cell.v instanceof Date) {
+				cell.t = 'n'; cell.z = XLSX.SSF._table[14];
+				cell.v = datenum(cell.v);
+			}
+			else cell.t = 's';
+			
+			ws[cell_ref] = cell;
+		}
+	}
+	if(range.s.c < 10000000) ws['!ref'] = XLSX.utils.encode_range(range);
+	return ws;
+}
+ 
+function Workbook() {
+	if(!(this instanceof Workbook)) return new Workbook();
+	this.SheetNames = [];
+	this.Sheets = {};
+}
+ 
+function s2ab(s) {
+	var buf = new ArrayBuffer(s.length);
+	var view = new Uint8Array(buf);
+	for (var i=0; i!=s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
+	return buf;
+}
+
+function export_table_to_excel(id) {
+var theTable = document.getElementById(id);
+var oo = generateArray(theTable);
+var ranges = oo[1];
+
+/* original data */
+var data = oo[0]; 
+var ws_name = "SheetJS";
+
+var wb = new Workbook(), ws = sheet_from_array_of_arrays(data);
+ 
+/* add ranges to worksheet */
+ws['!merges'] = ranges;
+
+/* add worksheet to workbook */
+wb.SheetNames.push(ws_name);
+wb.Sheets[ws_name] = ws;
+
+var wbout = XLSX.write(wb, {bookType:'xlsx', bookSST:false, type: 'binary'});
+
+saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), "test.xlsx")
+}
 /* xlsx.js (C) 2013-2015 SheetJS -- http://sheetjs.com */
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.JSZip=e()}}(function(){var define,module,exports;return function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}({1:[function(_dereq_,module,exports){"use strict";var _keyStr="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";exports.encode=function(input,utf8){var output="";var chr1,chr2,chr3,enc1,enc2,enc3,enc4;var i=0;while(i<input.length){chr1=input.charCodeAt(i++);chr2=input.charCodeAt(i++);chr3=input.charCodeAt(i++);enc1=chr1>>2;enc2=(chr1&3)<<4|chr2>>4;enc3=(chr2&15)<<2|chr3>>6;enc4=chr3&63;if(isNaN(chr2)){enc3=enc4=64}else if(isNaN(chr3)){enc4=64}output=output+_keyStr.charAt(enc1)+_keyStr.charAt(enc2)+_keyStr.charAt(enc3)+_keyStr.charAt(enc4)}return output};exports.decode=function(input,utf8){var output="";var chr1,chr2,chr3;var enc1,enc2,enc3,enc4;var i=0;input=input.replace(/[^A-Za-z0-9\+\/\=]/g,"");while(i<input.length){enc1=_keyStr.indexOf(input.charAt(i++));enc2=_keyStr.indexOf(input.charAt(i++));enc3=_keyStr.indexOf(input.charAt(i++));enc4=_keyStr.indexOf(input.charAt(i++));chr1=enc1<<2|enc2>>4;chr2=(enc2&15)<<4|enc3>>2;chr3=(enc3&3)<<6|enc4;output=output+String.fromCharCode(chr1);if(enc3!=64){output=output+String.fromCharCode(chr2)}if(enc4!=64){output=output+String.fromCharCode(chr3)}}return output}},{}],2:[function(_dereq_,module,exports){"use strict";function CompressedObject(){this.compressedSize=0;this.uncompressedSize=0;this.crc32=0;this.compressionMethod=null;this.compressedContent=null}CompressedObject.prototype={getContent:function(){return null},getCompressedContent:function(){return null}};module.exports=CompressedObject},{}],3:[function(_dereq_,module,exports){"use strict";exports.STORE={magic:"\x00\x00",compress:function(content){return content},uncompress:function(content){return content},compressInputType:null,uncompressInputType:null};exports.DEFLATE=_dereq_("./flate")},{"./flate":8}],4:[function(_dereq_,module,exports){"use strict";var utils=_dereq_("./utils");var table=[0,1996959894,3993919788,2567524794,124634137,1886057615,3915621685,2657392035,249268274,2044508324,3772115230,2547177864,162941995,2125561021,3887607047,2428444049,498536548,1789927666,4089016648,2227061214,450548861,1843258603,4107580753,2211677639,325883990,1684777152,4251122042,2321926636,335633487,1661365465,4195302755,2366115317,997073096,1281953886,3579855332,2724688242,1006888145,1258607687,3524101629,2768942443,901097722,1119000684,3686517206,2898065728,853044451,1172266101,3705015759,2882616665,651767980,1373503546,3369554304,3218104598,565507253,1454621731,3485111705,3099436303,671266974,1594198024,3322730930,2970347812,795835527,1483230225,3244367275,3060149565,1994146192,31158534,2563907772,4023717930,1907459465,112637215,2680153253,3904427059,2013776290,251722036,2517215374,3775830040,2137656763,141376813,2439277719,3865271297,1802195444,476864866,2238001368,4066508878,1812370925,453092731,2181625025,4111451223,1706088902,314042704,2344532202,4240017532,1658658271,366619977,2362670323,4224994405,1303535960,984961486,2747007092,3569037538,1256170817,1037604311,2765210733,3554079995,1131014506,879679996,2909243462,3663771856,1141124467,855842277,2852801631,3708648649,1342533948,654459306,3188396048,3373015174,1466479909,544179635,3110523913,3462522015,1591671054,702138776,2966460450,3352799412,1504918807,783551873,3082640443,3233442989,3988292384,2596254646,62317068,1957810842,3939845945,2647816111,81470997,1943803523,3814918930,2489596804,225274430,2053790376,3826175755,2466906013,167816743,2097651377,4027552580,2265490386,503444072,1762050814,4150417245,2154129355,426522225,1852507879,4275313526,2312317920,282753626,1742555852,4189708143,2394877945,397917763,1622183637,3604390888,2714866558,953729732,1340076626,3518719985,2797360999,1068828381,1219638859,3624741850,2936675148,906185462,1090812512,3747672003,2825379669,829329135,1181335161,3412177804,3160834842,628085408,1382605366,3423369109,3138078467,570562233,1426400815,3317316542,2998733608,733239954,1555261956,3268935591,3050360625,752459403,1541320221,2607071920,3965973030,1969922972,40735498,2617837225,3943577151,1913087877,83908371,2512341634,3803740692,2075208622,213261112,2463272603,3855990285,2094854071,198958881,2262029012,4057260610,1759359992,534414190,2176718541,4139329115,1873836001,414664567,2282248934,4279200368,1711684554,285281116,2405801727,4167216745,1634467795,376229701,2685067896,3608007406,1308918612,956543938,2808555105,3495958263,1231636301,1047427035,2932959818,3654703836,1088359270,936918e3,2847714899,3736837829,1202900863,817233897,3183342108,3401237130,1404277552,615818150,3134207493,3453421203,1423857449,601450431,3009837614,3294710456,1567103746,711928724,3020668471,3272380065,1510334235,755167117];module.exports=function crc32(input,crc){if(typeof input==="undefined"||!input.length){return 0}var isArray=utils.getTypeOf(input)!=="string";if(typeof crc=="undefined"){crc=0}var x=0;var y=0;var b=0;crc=crc^-1;for(var i=0,iTop=input.length;i<iTop;i++){b=isArray?input[i]:input.charCodeAt(i);y=(crc^b)&255;x=table[y];crc=crc>>>8^x}return crc^-1}},{"./utils":21}],5:[function(_dereq_,module,exports){"use strict";var utils=_dereq_("./utils");function DataReader(data){this.data=null;this.length=0;this.index=0}DataReader.prototype={checkOffset:function(offset){this.checkIndex(this.index+offset)},checkIndex:function(newIndex){if(this.length<newIndex||newIndex<0){throw new Error("End of data reached (data length = "+this.length+", asked index = "+newIndex+"). Corrupted zip ?")}},setIndex:function(newIndex){this.checkIndex(newIndex);this.index=newIndex},skip:function(n){this.setIndex(this.index+n)},byteAt:function(i){},readInt:function(size){var result=0,i;this.checkOffset(size);for(i=this.index+size-1;i>=this.index;i--){result=(result<<8)+this.byteAt(i)}this.index+=size;return result},readString:function(size){return utils.transformTo("string",this.readData(size))},readData:function(size){},lastIndexOfSignature:function(sig){},readDate:function(){var dostime=this.readInt(4);return new Date((dostime>>25&127)+1980,(dostime>>21&15)-1,dostime>>16&31,dostime>>11&31,dostime>>5&63,(dostime&31)<<1)}};module.exports=DataReader},{"./utils":21}],6:[function(_dereq_,module,exports){"use strict";exports.base64=false;exports.binary=false;exports.dir=false;exports.createFolders=false;exports.date=null;exports.compression=null;exports.comment=null},{}],7:[function(_dereq_,module,exports){"use strict";var utils=_dereq_("./utils");exports.string2binary=function(str){return utils.string2binary(str)};exports.string2Uint8Array=function(str){return utils.transformTo("uint8array",str)};exports.uint8Array2String=function(array){return utils.transformTo("string",array)};exports.string2Blob=function(str){var buffer=utils.transformTo("arraybuffer",str);return utils.arrayBuffer2Blob(buffer)};exports.arrayBuffer2Blob=function(buffer){return utils.arrayBuffer2Blob(buffer)};exports.transformTo=function(outputType,input){return utils.transformTo(outputType,input)};exports.getTypeOf=function(input){return utils.getTypeOf(input)};exports.checkSupport=function(type){return utils.checkSupport(type)};exports.MAX_VALUE_16BITS=utils.MAX_VALUE_16BITS;exports.MAX_VALUE_32BITS=utils.MAX_VALUE_32BITS;exports.pretty=function(str){return utils.pretty(str)};exports.findCompression=function(compressionMethod){return utils.findCompression(compressionMethod)};exports.isRegExp=function(object){return utils.isRegExp(object)}},{"./utils":21}],8:[function(_dereq_,module,exports){"use strict";var USE_TYPEDARRAY=typeof Uint8Array!=="undefined"&&typeof Uint16Array!=="undefined"&&typeof Uint32Array!=="undefined";var pako=_dereq_("pako");exports.uncompressInputType=USE_TYPEDARRAY?"uint8array":"array";exports.compressInputType=USE_TYPEDARRAY?"uint8array":"array";exports.magic="\b\x00";exports.compress=function(input){return pako.deflateRaw(input)};exports.uncompress=function(input){return pako.inflateRaw(input)}},{pako:24}],9:[function(_dereq_,module,exports){"use strict";var base64=_dereq_("./base64");function JSZip(data,options){if(!(this instanceof JSZip))return new JSZip(data,options);this.files={};this.comment=null;this.root="";if(data){this.load(data,options)}this.clone=function(){var newObj=new JSZip;for(var i in this){if(typeof this[i]!=="function"){newObj[i]=this[i]}}return newObj}}JSZip.prototype=_dereq_("./object");JSZip.prototype.load=_dereq_("./load");JSZip.support=_dereq_("./support");JSZip.defaults=_dereq_("./defaults");JSZip.utils=_dereq_("./deprecatedPublicUtils");JSZip.base64={encode:function(input){return base64.encode(input)},decode:function(input){return base64.decode(input)}};JSZip.compressions=_dereq_("./compressions");module.exports=JSZip},{"./base64":1,"./compressions":3,"./defaults":6,"./deprecatedPublicUtils":7,"./load":10,"./object":13,"./support":17}],10:[function(_dereq_,module,exports){"use strict";var base64=_dereq_("./base64");var ZipEntries=_dereq_("./zipEntries");module.exports=function(data,options){var files,zipEntries,i,input;options=options||{};if(options.base64){data=base64.decode(data)}zipEntries=new ZipEntries(data,options);files=zipEntries.files;for(i=0;i<files.length;i++){input=files[i];this.file(input.fileName,input.decompressed,{binary:true,optimizedBinaryString:true,date:input.date,dir:input.dir,comment:input.fileComment.length?input.fileComment:null,createFolders:options.createFolders})}if(zipEntries.zipComment.length){this.comment=zipEntries.zipComment}return this}},{"./base64":1,"./zipEntries":22}],11:[function(_dereq_,module,exports){(function(Buffer){"use strict";module.exports=function(data,encoding){return new Buffer(data,encoding)};module.exports.test=function(b){return Buffer.isBuffer(b)}}).call(this,typeof Buffer!=="undefined"?Buffer:undefined)},{}],12:[function(_dereq_,module,exports){"use strict";var Uint8ArrayReader=_dereq_("./uint8ArrayReader");function NodeBufferReader(data){this.data=data;this.length=this.data.length;this.index=0}NodeBufferReader.prototype=new Uint8ArrayReader;NodeBufferReader.prototype.readData=function(size){this.checkOffset(size);var result=this.data.slice(this.index,this.index+size);this.index+=size;return result};module.exports=NodeBufferReader},{"./uint8ArrayReader":18}],13:[function(_dereq_,module,exports){"use strict";var support=_dereq_("./support");var utils=_dereq_("./utils");var crc32=_dereq_("./crc32");var signature=_dereq_("./signature");var defaults=_dereq_("./defaults");var base64=_dereq_("./base64");var compressions=_dereq_("./compressions");var CompressedObject=_dereq_("./compressedObject");var nodeBuffer=_dereq_("./nodeBuffer");var utf8=_dereq_("./utf8");var StringWriter=_dereq_("./stringWriter");var Uint8ArrayWriter=_dereq_("./uint8ArrayWriter");var getRawData=function(file){if(file._data instanceof CompressedObject){file._data=file._data.getContent();file.options.binary=true;file.options.base64=false;if(utils.getTypeOf(file._data)==="uint8array"){var copy=file._data;file._data=new Uint8Array(copy.length);if(copy.length!==0){file._data.set(copy,0)}}}return file._data};var getBinaryData=function(file){var result=getRawData(file),type=utils.getTypeOf(result);if(type==="string"){if(!file.options.binary){if(support.nodebuffer){return nodeBuffer(result,"utf-8")}}return file.asBinary()}return result};var dataToString=function(asUTF8){var result=getRawData(this);if(result===null||typeof result==="undefined"){return""}if(this.options.base64){result=base64.decode(result)}if(asUTF8&&this.options.binary){result=out.utf8decode(result)}else{result=utils.transformTo("string",result)}if(!asUTF8&&!this.options.binary){result=utils.transformTo("string",out.utf8encode(result))}return result};var ZipObject=function(name,data,options){this.name=name;this.dir=options.dir;this.date=options.date;this.comment=options.comment;this._data=data;this.options=options;this._initialMetadata={dir:options.dir,date:options.date}};ZipObject.prototype={asText:function(){return dataToString.call(this,true)},asBinary:function(){return dataToString.call(this,false)},asNodeBuffer:function(){var result=getBinaryData(this);return utils.transformTo("nodebuffer",result)},asUint8Array:function(){var result=getBinaryData(this);return utils.transformTo("uint8array",result)},asArrayBuffer:function(){return this.asUint8Array().buffer}};var decToHex=function(dec,bytes){var hex="",i;for(i=0;i<bytes;i++){hex+=String.fromCharCode(dec&255);dec=dec>>>8}return hex};var extend=function(){var result={},i,attr;for(i=0;i<arguments.length;i++){for(attr in arguments[i]){if(arguments[i].hasOwnProperty(attr)&&typeof result[attr]==="undefined"){result[attr]=arguments[i][attr]}}}return result};var prepareFileAttrs=function(o){o=o||{};if(o.base64===true&&(o.binary===null||o.binary===undefined)){o.binary=true}o=extend(o,defaults);o.date=o.date||new Date;if(o.compression!==null)o.compression=o.compression.toUpperCase();return o};var fileAdd=function(name,data,o){var dataType=utils.getTypeOf(data),parent;o=prepareFileAttrs(o);if(o.createFolders&&(parent=parentFolder(name))){folderAdd.call(this,parent,true)}if(o.dir||data===null||typeof data==="undefined"){o.base64=false;o.binary=false;data=null}else if(dataType==="string"){if(o.binary&&!o.base64){if(o.optimizedBinaryString!==true){data=utils.string2binary(data)}}}else{o.base64=false;o.binary=true;if(!dataType&&!(data instanceof CompressedObject)){throw new Error("The data of '"+name+"' is in an unsupported format !")}if(dataType==="arraybuffer"){data=utils.transformTo("uint8array",data)}}var object=new ZipObject(name,data,o);this.files[name]=object;return object};var parentFolder=function(path){if(path.slice(-1)=="/"){path=path.substring(0,path.length-1)}var lastSlash=path.lastIndexOf("/");return lastSlash>0?path.substring(0,lastSlash):""};var folderAdd=function(name,createFolders){if(name.slice(-1)!="/"){name+="/"}createFolders=typeof createFolders!=="undefined"?createFolders:false;if(!this.files[name]){fileAdd.call(this,name,null,{dir:true,createFolders:createFolders})}return this.files[name]};var generateCompressedObjectFrom=function(file,compression){var result=new CompressedObject,content;if(file._data instanceof CompressedObject){result.uncompressedSize=file._data.uncompressedSize;result.crc32=file._data.crc32;if(result.uncompressedSize===0||file.dir){compression=compressions["STORE"];result.compressedContent="";result.crc32=0}else if(file._data.compressionMethod===compression.magic){result.compressedContent=file._data.getCompressedContent()}else{content=file._data.getContent();result.compressedContent=compression.compress(utils.transformTo(compression.compressInputType,content))}}else{content=getBinaryData(file);if(!content||content.length===0||file.dir){compression=compressions["STORE"];content=""}result.uncompressedSize=content.length;result.crc32=crc32(content);result.compressedContent=compression.compress(utils.transformTo(compression.compressInputType,content))}result.compressedSize=result.compressedContent.length;result.compressionMethod=compression.magic;return result};var generateZipParts=function(name,file,compressedObject,offset){var data=compressedObject.compressedContent,utfEncodedFileName=utils.transformTo("string",utf8.utf8encode(file.name)),comment=file.comment||"",utfEncodedComment=utils.transformTo("string",utf8.utf8encode(comment)),useUTF8ForFileName=utfEncodedFileName.length!==file.name.length,useUTF8ForComment=utfEncodedComment.length!==comment.length,o=file.options,dosTime,dosDate,extraFields="",unicodePathExtraField="",unicodeCommentExtraField="",dir,date;if(file._initialMetadata.dir!==file.dir){dir=file.dir}else{dir=o.dir}if(file._initialMetadata.date!==file.date){date=file.date}else{date=o.date}dosTime=date.getHours();dosTime=dosTime<<6;dosTime=dosTime|date.getMinutes();dosTime=dosTime<<5;dosTime=dosTime|date.getSeconds()/2;dosDate=date.getFullYear()-1980;dosDate=dosDate<<4;dosDate=dosDate|date.getMonth()+1;dosDate=dosDate<<5;dosDate=dosDate|date.getDate();if(useUTF8ForFileName){unicodePathExtraField=decToHex(1,1)+decToHex(crc32(utfEncodedFileName),4)+utfEncodedFileName;extraFields+="up"+decToHex(unicodePathExtraField.length,2)+unicodePathExtraField}if(useUTF8ForComment){unicodeCommentExtraField=decToHex(1,1)+decToHex(this.crc32(utfEncodedComment),4)+utfEncodedComment;extraFields+="uc"+decToHex(unicodeCommentExtraField.length,2)+unicodeCommentExtraField}var header="";header+="\n\x00";header+=useUTF8ForFileName||useUTF8ForComment?"\x00\b":"\x00\x00";header+=compressedObject.compressionMethod;header+=decToHex(dosTime,2);header+=decToHex(dosDate,2);header+=decToHex(compressedObject.crc32,4);header+=decToHex(compressedObject.compressedSize,4);header+=decToHex(compressedObject.uncompressedSize,4);header+=decToHex(utfEncodedFileName.length,2);header+=decToHex(extraFields.length,2);var fileRecord=signature.LOCAL_FILE_HEADER+header+utfEncodedFileName+extraFields;var dirRecord=signature.CENTRAL_FILE_HEADER+"\x00"+header+decToHex(utfEncodedComment.length,2)+"\x00\x00"+"\x00\x00"+(dir===true?"\x00\x00\x00":"\x00\x00\x00\x00")+decToHex(offset,4)+utfEncodedFileName+extraFields+utfEncodedComment;return{fileRecord:fileRecord,dirRecord:dirRecord,compressedObject:compressedObject}};var out={load:function(stream,options){throw new Error("Load method is not defined. Is the file jszip-load.js included ?")},filter:function(search){var result=[],filename,relativePath,file,fileClone;for(filename in this.files){if(!this.files.hasOwnProperty(filename)){continue}file=this.files[filename];fileClone=new ZipObject(file.name,file._data,extend(file.options));relativePath=filename.slice(this.root.length,filename.length);if(filename.slice(0,this.root.length)===this.root&&search(relativePath,fileClone)){result.push(fileClone)}}return result},file:function(name,data,o){if(arguments.length===1){if(utils.isRegExp(name)){var regexp=name;return this.filter(function(relativePath,file){return!file.dir&&regexp.test(relativePath)})}else{return this.filter(function(relativePath,file){return!file.dir&&relativePath===name})[0]||null}}else{name=this.root+name;fileAdd.call(this,name,data,o)}return this},folder:function(arg){if(!arg){return this}if(utils.isRegExp(arg)){return this.filter(function(relativePath,file){return file.dir&&arg.test(relativePath)})}var name=this.root+arg;var newFolder=folderAdd.call(this,name);var ret=this.clone();ret.root=newFolder.name;return ret},remove:function(name){name=this.root+name;var file=this.files[name];if(!file){if(name.slice(-1)!="/"){name+="/"}file=this.files[name]}if(file&&!file.dir){delete this.files[name]}else{var kids=this.filter(function(relativePath,file){return file.name.slice(0,name.length)===name});for(var i=0;i<kids.length;i++){delete this.files[kids[i].name]}}return this},generate:function(options){options=extend(options||{},{base64:true,compression:"STORE",type:"base64",comment:null});utils.checkSupport(options.type);var zipData=[],localDirLength=0,centralDirLength=0,writer,i,utfEncodedComment=utils.transformTo("string",this.utf8encode(options.comment||this.comment||""));for(var name in this.files){if(!this.files.hasOwnProperty(name)){continue}var file=this.files[name];var compressionName=file.options.compression||options.compression.toUpperCase();var compression=compressions[compressionName];if(!compression){throw new Error(compressionName+" is not a valid compression method !")}var compressedObject=generateCompressedObjectFrom.call(this,file,compression);var zipPart=generateZipParts.call(this,name,file,compressedObject,localDirLength);localDirLength+=zipPart.fileRecord.length+compressedObject.compressedSize;centralDirLength+=zipPart.dirRecord.length;zipData.push(zipPart)}var dirEnd="";dirEnd=signature.CENTRAL_DIRECTORY_END+"\x00\x00"+"\x00\x00"+decToHex(zipData.length,2)+decToHex(zipData.length,2)+decToHex(centralDirLength,4)+decToHex(localDirLength,4)+decToHex(utfEncodedComment.length,2)+utfEncodedComment;var typeName=options.type.toLowerCase();if(typeName==="uint8array"||typeName==="arraybuffer"||typeName==="blob"||typeName==="nodebuffer"){writer=new Uint8ArrayWriter(localDirLength+centralDirLength+dirEnd.length)}else{writer=new StringWriter(localDirLength+centralDirLength+dirEnd.length)}for(i=0;i<zipData.length;i++){writer.append(zipData[i].fileRecord);writer.append(zipData[i].compressedObject.compressedContent)}for(i=0;i<zipData.length;i++){writer.append(zipData[i].dirRecord)}writer.append(dirEnd);var zip=writer.finalize();switch(options.type.toLowerCase()){case"uint8array":case"arraybuffer":case"nodebuffer":return utils.transformTo(options.type.toLowerCase(),zip);case"blob":return utils.arrayBuffer2Blob(utils.transformTo("arraybuffer",zip));case"base64":return options.base64?base64.encode(zip):zip;default:return zip}},crc32:function(input,crc){return crc32(input,crc)},utf8encode:function(string){return utils.transformTo("string",utf8.utf8encode(string))},utf8decode:function(input){return utf8.utf8decode(input)}};module.exports=out},{"./base64":1,"./compressedObject":2,"./compressions":3,"./crc32":4,"./defaults":6,"./nodeBuffer":11,"./signature":14,"./stringWriter":16,"./support":17,"./uint8ArrayWriter":19,"./utf8":20,"./utils":21}],14:[function(_dereq_,module,exports){"use strict";exports.LOCAL_FILE_HEADER="PK";exports.CENTRAL_FILE_HEADER="PK";exports.CENTRAL_DIRECTORY_END="PK";exports.ZIP64_CENTRAL_DIRECTORY_LOCATOR="PK";exports.ZIP64_CENTRAL_DIRECTORY_END="PK";exports.DATA_DESCRIPTOR="PK\b"},{}],15:[function(_dereq_,module,exports){"use strict";var DataReader=_dereq_("./dataReader");var utils=_dereq_("./utils");function StringReader(data,optimizedBinaryString){this.data=data;if(!optimizedBinaryString){this.data=utils.string2binary(this.data)}this.length=this.data.length;this.index=0}StringReader.prototype=new DataReader;StringReader.prototype.byteAt=function(i){return this.data.charCodeAt(i)};StringReader.prototype.lastIndexOfSignature=function(sig){return this.data.lastIndexOf(sig)};StringReader.prototype.readData=function(size){this.checkOffset(size);var result=this.data.slice(this.index,this.index+size);this.index+=size;return result};module.exports=StringReader},{"./dataReader":5,"./utils":21}],16:[function(_dereq_,module,exports){"use strict";var utils=_dereq_("./utils");var StringWriter=function(){this.data=[]};StringWriter.prototype={append:function(input){input=utils.transformTo("string",input);this.data.push(input)},finalize:function(){return this.data.join("")}};module.exports=StringWriter},{"./utils":21}],17:[function(_dereq_,module,exports){(function(Buffer){"use strict";exports.base64=true;exports.array=true;exports.string=true;exports.arraybuffer=typeof ArrayBuffer!=="undefined"&&typeof Uint8Array!=="undefined";exports.nodebuffer=typeof Buffer!=="undefined";exports.uint8array=typeof Uint8Array!=="undefined";if(typeof ArrayBuffer==="undefined"){exports.blob=false}else{var buffer=new ArrayBuffer(0);try{exports.blob=new Blob([buffer],{type:"application/zip"}).size===0}catch(e){try{var Builder=window.BlobBuilder||window.WebKitBlobBuilder||window.MozBlobBuilder||window.MSBlobBuilder;var builder=new Builder;builder.append(buffer);exports.blob=builder.getBlob("application/zip").size===0}catch(e){exports.blob=false}}}}).call(this,typeof Buffer!=="undefined"?Buffer:undefined)},{}],18:[function(_dereq_,module,exports){"use strict";var DataReader=_dereq_("./dataReader");function Uint8ArrayReader(data){if(data){this.data=data;this.length=this.data.length;this.index=0}}Uint8ArrayReader.prototype=new DataReader;Uint8ArrayReader.prototype.byteAt=function(i){return this.data[i]};Uint8ArrayReader.prototype.lastIndexOfSignature=function(sig){var sig0=sig.charCodeAt(0),sig1=sig.charCodeAt(1),sig2=sig.charCodeAt(2),sig3=sig.charCodeAt(3);for(var i=this.length-4;i>=0;--i){if(this.data[i]===sig0&&this.data[i+1]===sig1&&this.data[i+2]===sig2&&this.data[i+3]===sig3){return i}}return-1};Uint8ArrayReader.prototype.readData=function(size){this.checkOffset(size);if(size===0){return new Uint8Array(0)}var result=this.data.subarray(this.index,this.index+size);this.index+=size;return result};module.exports=Uint8ArrayReader},{"./dataReader":5}],19:[function(_dereq_,module,exports){"use strict";var utils=_dereq_("./utils");var Uint8ArrayWriter=function(length){this.data=new Uint8Array(length);this.index=0};Uint8ArrayWriter.prototype={append:function(input){if(input.length!==0){input=utils.transformTo("uint8array",input);this.data.set(input,this.index);this.index+=input.length}},finalize:function(){return this.data}};module.exports=Uint8ArrayWriter},{"./utils":21}],20:[function(_dereq_,module,exports){"use strict";var utils=_dereq_("./utils");var support=_dereq_("./support");var nodeBuffer=_dereq_("./nodeBuffer");var _utf8len=new Array(256);for(var i=0;i<256;i++){_utf8len[i]=i>=252?6:i>=248?5:i>=240?4:i>=224?3:i>=192?2:1}_utf8len[254]=_utf8len[254]=1;var string2buf=function(str){var buf,c,c2,m_pos,i,str_len=str.length,buf_len=0;for(m_pos=0;m_pos<str_len;m_pos++){c=str.charCodeAt(m_pos);if((c&64512)===55296&&m_pos+1<str_len){c2=str.charCodeAt(m_pos+1);if((c2&64512)===56320){c=65536+(c-55296<<10)+(c2-56320);m_pos++}}buf_len+=c<128?1:c<2048?2:c<65536?3:4}if(support.uint8array){buf=new Uint8Array(buf_len)}else{buf=new Array(buf_len)}for(i=0,m_pos=0;i<buf_len;m_pos++){c=str.charCodeAt(m_pos);if((c&64512)===55296&&m_pos+1<str_len){c2=str.charCodeAt(m_pos+1);if((c2&64512)===56320){c=65536+(c-55296<<10)+(c2-56320);m_pos++}}if(c<128){buf[i++]=c}else if(c<2048){buf[i++]=192|c>>>6;buf[i++]=128|c&63}else if(c<65536){buf[i++]=224|c>>>12;buf[i++]=128|c>>>6&63;buf[i++]=128|c&63}else{buf[i++]=240|c>>>18;buf[i++]=128|c>>>12&63;buf[i++]=128|c>>>6&63;buf[i++]=128|c&63}}return buf};var utf8border=function(buf,max){var pos;max=max||buf.length;if(max>buf.length){max=buf.length}pos=max-1;while(pos>=0&&(buf[pos]&192)===128){pos--}if(pos<0){return max}if(pos===0){return max}return pos+_utf8len[buf[pos]]>max?pos:max};var buf2string=function(buf){var str,i,out,c,c_len;var len=buf.length;var utf16buf=new Array(len*2);for(out=0,i=0;i<len;){c=buf[i++];if(c<128){utf16buf[out++]=c;continue}c_len=_utf8len[c];if(c_len>4){utf16buf[out++]=65533;i+=c_len-1;continue}c&=c_len===2?31:c_len===3?15:7;while(c_len>1&&i<len){c=c<<6|buf[i++]&63;c_len--}if(c_len>1){utf16buf[out++]=65533;continue}if(c<65536){utf16buf[out++]=c}else{c-=65536;utf16buf[out++]=55296|c>>10&1023;utf16buf[out++]=56320|c&1023}}if(utf16buf.length!==out){if(utf16buf.subarray){utf16buf=utf16buf.subarray(0,out)}else{utf16buf.length=out}}return utils.applyFromCharCode(utf16buf)};exports.utf8encode=function utf8encode(str){if(support.nodebuffer){return nodeBuffer(str,"utf-8")}return string2buf(str)};exports.utf8decode=function utf8decode(buf){if(support.nodebuffer){return utils.transformTo("nodebuffer",buf).toString("utf-8")}buf=utils.transformTo(support.uint8array?"uint8array":"array",buf);var result=[],k=0,len=buf.length,chunk=65536;while(k<len){var nextBoundary=utf8border(buf,Math.min(k+chunk,len));if(support.uint8array){result.push(buf2string(buf.subarray(k,nextBoundary)))}else{result.push(buf2string(buf.slice(k,nextBoundary)))}k=nextBoundary}return result.join("")}},{"./nodeBuffer":11,"./support":17,"./utils":21}],21:[function(_dereq_,module,exports){"use strict";var support=_dereq_("./support");var compressions=_dereq_("./compressions");var nodeBuffer=_dereq_("./nodeBuffer");exports.string2binary=function(str){var result="";for(var i=0;i<str.length;i++){result+=String.fromCharCode(str.charCodeAt(i)&255)}return result};exports.arrayBuffer2Blob=function(buffer){exports.checkSupport("blob");try{return new Blob([buffer],{type:"application/zip"})}catch(e){try{var Builder=window.BlobBuilder||window.WebKitBlobBuilder||window.MozBlobBuilder||window.MSBlobBuilder;var builder=new Builder;builder.append(buffer);return builder.getBlob("application/zip")}catch(e){throw new Error("Bug : can't construct the Blob.")}}};function identity(input){return input}function stringToArrayLike(str,array){for(var i=0;i<str.length;++i){array[i]=str.charCodeAt(i)&255}return array}function arrayLikeToString(array){var chunk=65536;var result=[],len=array.length,type=exports.getTypeOf(array),k=0,canUseApply=true;try{switch(type){case"uint8array":String.fromCharCode.apply(null,new Uint8Array(0));break;case"nodebuffer":String.fromCharCode.apply(null,nodeBuffer(0));break}}catch(e){canUseApply=false}if(!canUseApply){var resultStr="";for(var i=0;i<array.length;i++){resultStr+=String.fromCharCode(array[i])}return resultStr}while(k<len&&chunk>1){try{if(type==="array"||type==="nodebuffer"){result.push(String.fromCharCode.apply(null,array.slice(k,Math.min(k+chunk,len))))}else{result.push(String.fromCharCode.apply(null,array.subarray(k,Math.min(k+chunk,len))))}k+=chunk}catch(e){chunk=Math.floor(chunk/2)}}return result.join("")}exports.applyFromCharCode=arrayLikeToString;function arrayLikeToArrayLike(arrayFrom,arrayTo){for(var i=0;i<arrayFrom.length;i++){arrayTo[i]=arrayFrom[i]}return arrayTo}var transform={};transform["string"]={string:identity,array:function(input){return stringToArrayLike(input,new Array(input.length))},arraybuffer:function(input){return transform["string"]["uint8array"](input).buffer},uint8array:function(input){return stringToArrayLike(input,new Uint8Array(input.length))},nodebuffer:function(input){return stringToArrayLike(input,nodeBuffer(input.length))}};transform["array"]={string:arrayLikeToString,array:identity,arraybuffer:function(input){return new Uint8Array(input).buffer},uint8array:function(input){return new Uint8Array(input)},nodebuffer:function(input){return nodeBuffer(input)}};transform["arraybuffer"]={string:function(input){return arrayLikeToString(new Uint8Array(input))},array:function(input){return arrayLikeToArrayLike(new Uint8Array(input),new Array(input.byteLength))},arraybuffer:identity,uint8array:function(input){return new Uint8Array(input)},nodebuffer:function(input){return nodeBuffer(new Uint8Array(input))}};transform["uint8array"]={string:arrayLikeToString,array:function(input){return arrayLikeToArrayLike(input,new Array(input.length))},arraybuffer:function(input){return input.buffer},uint8array:identity,nodebuffer:function(input){return nodeBuffer(input)}};transform["nodebuffer"]={string:arrayLikeToString,array:function(input){return arrayLikeToArrayLike(input,new Array(input.length))},arraybuffer:function(input){return transform["nodebuffer"]["uint8array"](input).buffer},uint8array:function(input){return arrayLikeToArrayLike(input,new Uint8Array(input.length))},nodebuffer:identity};exports.transformTo=function(outputType,input){if(!input){input=""}if(!outputType){return input}exports.checkSupport(outputType);var inputType=exports.getTypeOf(input);var result=transform[inputType][outputType](input);return result};exports.getTypeOf=function(input){if(typeof input==="string"){return"string"}if(Object.prototype.toString.call(input)==="[object Array]"){return"array"}if(support.nodebuffer&&nodeBuffer.test(input)){return"nodebuffer"}if(support.uint8array&&input instanceof Uint8Array){return"uint8array"}if(support.arraybuffer&&input instanceof ArrayBuffer){return"arraybuffer"}};exports.checkSupport=function(type){var supported=support[type.toLowerCase()];if(!supported){throw new Error(type+" is not supported by this browser")}};exports.MAX_VALUE_16BITS=65535;exports.MAX_VALUE_32BITS=-1;exports.pretty=function(str){var res="",code,i;for(i=0;i<(str||"").length;i++){code=str.charCodeAt(i);res+="\\x"+(code<16?"0":"")+code.toString(16).toUpperCase()
 }return res};exports.findCompression=function(compressionMethod){for(var method in compressions){if(!compressions.hasOwnProperty(method)){continue}if(compressions[method].magic===compressionMethod){return compressions[method]}}return null};exports.isRegExp=function(object){return Object.prototype.toString.call(object)==="[object RegExp]"}},{"./compressions":3,"./nodeBuffer":11,"./support":17}],22:[function(_dereq_,module,exports){"use strict";var StringReader=_dereq_("./stringReader");var NodeBufferReader=_dereq_("./nodeBufferReader");var Uint8ArrayReader=_dereq_("./uint8ArrayReader");var utils=_dereq_("./utils");var sig=_dereq_("./signature");var ZipEntry=_dereq_("./zipEntry");var support=_dereq_("./support");var jszipProto=_dereq_("./object");function ZipEntries(data,loadOptions){this.files=[];this.loadOptions=loadOptions;if(data){this.load(data)}}ZipEntries.prototype={checkSignature:function(expectedSignature){var signature=this.reader.readString(4);if(signature!==expectedSignature){throw new Error("Corrupted zip or bug : unexpected signature "+"("+utils.pretty(signature)+", expected "+utils.pretty(expectedSignature)+")")}},readBlockEndOfCentral:function(){this.diskNumber=this.reader.readInt(2);this.diskWithCentralDirStart=this.reader.readInt(2);this.centralDirRecordsOnThisDisk=this.reader.readInt(2);this.centralDirRecords=this.reader.readInt(2);this.centralDirSize=this.reader.readInt(4);this.centralDirOffset=this.reader.readInt(4);this.zipCommentLength=this.reader.readInt(2);this.zipComment=this.reader.readString(this.zipCommentLength);this.zipComment=jszipProto.utf8decode(this.zipComment)},readBlockZip64EndOfCentral:function(){this.zip64EndOfCentralSize=this.reader.readInt(8);this.versionMadeBy=this.reader.readString(2);this.versionNeeded=this.reader.readInt(2);this.diskNumber=this.reader.readInt(4);this.diskWithCentralDirStart=this.reader.readInt(4);this.centralDirRecordsOnThisDisk=this.reader.readInt(8);this.centralDirRecords=this.reader.readInt(8);this.centralDirSize=this.reader.readInt(8);this.centralDirOffset=this.reader.readInt(8);this.zip64ExtensibleData={};var extraDataSize=this.zip64EndOfCentralSize-44,index=0,extraFieldId,extraFieldLength,extraFieldValue;while(index<extraDataSize){extraFieldId=this.reader.readInt(2);extraFieldLength=this.reader.readInt(4);extraFieldValue=this.reader.readString(extraFieldLength);this.zip64ExtensibleData[extraFieldId]={id:extraFieldId,length:extraFieldLength,value:extraFieldValue}}},readBlockZip64EndOfCentralLocator:function(){this.diskWithZip64CentralDirStart=this.reader.readInt(4);this.relativeOffsetEndOfZip64CentralDir=this.reader.readInt(8);this.disksCount=this.reader.readInt(4);if(this.disksCount>1){throw new Error("Multi-volumes zip are not supported")}},readLocalFiles:function(){var i,file;for(i=0;i<this.files.length;i++){file=this.files[i];this.reader.setIndex(file.localHeaderOffset);this.checkSignature(sig.LOCAL_FILE_HEADER);file.readLocalPart(this.reader);file.handleUTF8()}},readCentralDir:function(){var file;this.reader.setIndex(this.centralDirOffset);while(this.reader.readString(4)===sig.CENTRAL_FILE_HEADER){file=new ZipEntry({zip64:this.zip64},this.loadOptions);file.readCentralPart(this.reader);this.files.push(file)}},readEndOfCentral:function(){var offset=this.reader.lastIndexOfSignature(sig.CENTRAL_DIRECTORY_END);if(offset===-1){throw new Error("Corrupted zip : can't find end of central directory")}this.reader.setIndex(offset);this.checkSignature(sig.CENTRAL_DIRECTORY_END);this.readBlockEndOfCentral();if(this.diskNumber===utils.MAX_VALUE_16BITS||this.diskWithCentralDirStart===utils.MAX_VALUE_16BITS||this.centralDirRecordsOnThisDisk===utils.MAX_VALUE_16BITS||this.centralDirRecords===utils.MAX_VALUE_16BITS||this.centralDirSize===utils.MAX_VALUE_32BITS||this.centralDirOffset===utils.MAX_VALUE_32BITS){this.zip64=true;offset=this.reader.lastIndexOfSignature(sig.ZIP64_CENTRAL_DIRECTORY_LOCATOR);if(offset===-1){throw new Error("Corrupted zip : can't find the ZIP64 end of central directory locator")}this.reader.setIndex(offset);this.checkSignature(sig.ZIP64_CENTRAL_DIRECTORY_LOCATOR);this.readBlockZip64EndOfCentralLocator();this.reader.setIndex(this.relativeOffsetEndOfZip64CentralDir);this.checkSignature(sig.ZIP64_CENTRAL_DIRECTORY_END);this.readBlockZip64EndOfCentral()}},prepareReader:function(data){var type=utils.getTypeOf(data);if(type==="string"&&!support.uint8array){this.reader=new StringReader(data,this.loadOptions.optimizedBinaryString)}else if(type==="nodebuffer"){this.reader=new NodeBufferReader(data)}else{this.reader=new Uint8ArrayReader(utils.transformTo("uint8array",data))}},load:function(data){this.prepareReader(data);this.readEndOfCentral();this.readCentralDir();this.readLocalFiles()}};module.exports=ZipEntries},{"./nodeBufferReader":12,"./object":13,"./signature":14,"./stringReader":15,"./support":17,"./uint8ArrayReader":18,"./utils":21,"./zipEntry":23}],23:[function(_dereq_,module,exports){"use strict";var StringReader=_dereq_("./stringReader");var utils=_dereq_("./utils");var CompressedObject=_dereq_("./compressedObject");var jszipProto=_dereq_("./object");function ZipEntry(options,loadOptions){this.options=options;this.loadOptions=loadOptions}ZipEntry.prototype={isEncrypted:function(){return(this.bitFlag&1)===1},useUTF8:function(){return(this.bitFlag&2048)===2048},prepareCompressedContent:function(reader,from,length){return function(){var previousIndex=reader.index;reader.setIndex(from);var compressedFileData=reader.readData(length);reader.setIndex(previousIndex);return compressedFileData}},prepareContent:function(reader,from,length,compression,uncompressedSize){return function(){var compressedFileData=utils.transformTo(compression.uncompressInputType,this.getCompressedContent());var uncompressedFileData=compression.uncompress(compressedFileData);if(uncompressedFileData.length!==uncompressedSize){throw new Error("Bug : uncompressed data size mismatch")}return uncompressedFileData}},readLocalPart:function(reader){var compression,localExtraFieldsLength;reader.skip(22);this.fileNameLength=reader.readInt(2);localExtraFieldsLength=reader.readInt(2);this.fileName=reader.readString(this.fileNameLength);reader.skip(localExtraFieldsLength);if(this.compressedSize==-1||this.uncompressedSize==-1){throw new Error("Bug or corrupted zip : didn't get enough informations from the central directory "+"(compressedSize == -1 || uncompressedSize == -1)")}compression=utils.findCompression(this.compressionMethod);if(compression===null){throw new Error("Corrupted zip : compression "+utils.pretty(this.compressionMethod)+" unknown (inner file : "+this.fileName+")")}this.decompressed=new CompressedObject;this.decompressed.compressedSize=this.compressedSize;this.decompressed.uncompressedSize=this.uncompressedSize;this.decompressed.crc32=this.crc32;this.decompressed.compressionMethod=this.compressionMethod;this.decompressed.getCompressedContent=this.prepareCompressedContent(reader,reader.index,this.compressedSize,compression);this.decompressed.getContent=this.prepareContent(reader,reader.index,this.compressedSize,compression,this.uncompressedSize);if(this.loadOptions.checkCRC32){this.decompressed=utils.transformTo("string",this.decompressed.getContent());if(jszipProto.crc32(this.decompressed)!==this.crc32){throw new Error("Corrupted zip : CRC32 mismatch")}}},readCentralPart:function(reader){this.versionMadeBy=reader.readString(2);this.versionNeeded=reader.readInt(2);this.bitFlag=reader.readInt(2);this.compressionMethod=reader.readString(2);this.date=reader.readDate();this.crc32=reader.readInt(4);this.compressedSize=reader.readInt(4);this.uncompressedSize=reader.readInt(4);this.fileNameLength=reader.readInt(2);this.extraFieldsLength=reader.readInt(2);this.fileCommentLength=reader.readInt(2);this.diskNumberStart=reader.readInt(2);this.internalFileAttributes=reader.readInt(2);this.externalFileAttributes=reader.readInt(4);this.localHeaderOffset=reader.readInt(4);if(this.isEncrypted()){throw new Error("Encrypted zip are not supported")}this.fileName=reader.readString(this.fileNameLength);this.readExtraFields(reader);this.parseZIP64ExtraField(reader);this.fileComment=reader.readString(this.fileCommentLength);this.dir=this.externalFileAttributes&16?true:false},parseZIP64ExtraField:function(reader){if(!this.extraFields[1]){return}var extraReader=new StringReader(this.extraFields[1].value);if(this.uncompressedSize===utils.MAX_VALUE_32BITS){this.uncompressedSize=extraReader.readInt(8)}if(this.compressedSize===utils.MAX_VALUE_32BITS){this.compressedSize=extraReader.readInt(8)}if(this.localHeaderOffset===utils.MAX_VALUE_32BITS){this.localHeaderOffset=extraReader.readInt(8)}if(this.diskNumberStart===utils.MAX_VALUE_32BITS){this.diskNumberStart=extraReader.readInt(4)}},readExtraFields:function(reader){var start=reader.index,extraFieldId,extraFieldLength,extraFieldValue;this.extraFields=this.extraFields||{};while(reader.index<start+this.extraFieldsLength){extraFieldId=reader.readInt(2);extraFieldLength=reader.readInt(2);extraFieldValue=reader.readString(extraFieldLength);this.extraFields[extraFieldId]={id:extraFieldId,length:extraFieldLength,value:extraFieldValue}}},handleUTF8:function(){if(this.useUTF8()){this.fileName=jszipProto.utf8decode(this.fileName);this.fileComment=jszipProto.utf8decode(this.fileComment)}else{var upath=this.findExtraFieldUnicodePath();if(upath!==null){this.fileName=upath}var ucomment=this.findExtraFieldUnicodeComment();if(ucomment!==null){this.fileComment=ucomment}}},findExtraFieldUnicodePath:function(){var upathField=this.extraFields[28789];if(upathField){var extraReader=new StringReader(upathField.value);if(extraReader.readInt(1)!==1){return null}if(jszipProto.crc32(this.fileName)!==extraReader.readInt(4)){return null}return jszipProto.utf8decode(extraReader.readString(upathField.length-5))}return null},findExtraFieldUnicodeComment:function(){var ucommentField=this.extraFields[25461];if(ucommentField){var extraReader=new StringReader(ucommentField.value);if(extraReader.readInt(1)!==1){return null}if(jszipProto.crc32(this.fileComment)!==extraReader.readInt(4)){return null}return jszipProto.utf8decode(extraReader.readString(ucommentField.length-5))}return null}};module.exports=ZipEntry},{"./compressedObject":2,"./object":13,"./stringReader":15,"./utils":21}],24:[function(_dereq_,module,exports){"use strict";var assign=_dereq_("./lib/utils/common").assign;var deflate=_dereq_("./lib/deflate");var inflate=_dereq_("./lib/inflate");var constants=_dereq_("./lib/zlib/constants");var pako={};assign(pako,deflate,inflate,constants);module.exports=pako},{"./lib/deflate":25,"./lib/inflate":26,"./lib/utils/common":27,"./lib/zlib/constants":30}],25:[function(_dereq_,module,exports){"use strict";var zlib_deflate=_dereq_("./zlib/deflate.js");var utils=_dereq_("./utils/common");var strings=_dereq_("./utils/strings");var msg=_dereq_("./zlib/messages");var zstream=_dereq_("./zlib/zstream");var Z_NO_FLUSH=0;var Z_FINISH=4;var Z_OK=0;var Z_STREAM_END=1;var Z_DEFAULT_COMPRESSION=-1;var Z_DEFAULT_STRATEGY=0;var Z_DEFLATED=8;var Deflate=function(options){this.options=utils.assign({level:Z_DEFAULT_COMPRESSION,method:Z_DEFLATED,chunkSize:16384,windowBits:15,memLevel:8,strategy:Z_DEFAULT_STRATEGY,to:""},options||{});var opt=this.options;if(opt.raw&&opt.windowBits>0){opt.windowBits=-opt.windowBits}else if(opt.gzip&&opt.windowBits>0&&opt.windowBits<16){opt.windowBits+=16}this.err=0;this.msg="";this.ended=false;this.chunks=[];this.strm=new zstream;this.strm.avail_out=0;var status=zlib_deflate.deflateInit2(this.strm,opt.level,opt.method,opt.windowBits,opt.memLevel,opt.strategy);if(status!==Z_OK){throw new Error(msg[status])}if(opt.header){zlib_deflate.deflateSetHeader(this.strm,opt.header)}};Deflate.prototype.push=function(data,mode){var strm=this.strm;var chunkSize=this.options.chunkSize;var status,_mode;if(this.ended){return false}_mode=mode===~~mode?mode:mode===true?Z_FINISH:Z_NO_FLUSH;if(typeof data==="string"){strm.input=strings.string2buf(data)}else{strm.input=data}strm.next_in=0;strm.avail_in=strm.input.length;do{if(strm.avail_out===0){strm.output=new utils.Buf8(chunkSize);strm.next_out=0;strm.avail_out=chunkSize}status=zlib_deflate.deflate(strm,_mode);if(status!==Z_STREAM_END&&status!==Z_OK){this.onEnd(status);this.ended=true;return false}if(strm.avail_out===0||strm.avail_in===0&&_mode===Z_FINISH){if(this.options.to==="string"){this.onData(strings.buf2binstring(utils.shrinkBuf(strm.output,strm.next_out)))}else{this.onData(utils.shrinkBuf(strm.output,strm.next_out))}}}while((strm.avail_in>0||strm.avail_out===0)&&status!==Z_STREAM_END);if(_mode===Z_FINISH){status=zlib_deflate.deflateEnd(this.strm);this.onEnd(status);this.ended=true;return status===Z_OK}return true};Deflate.prototype.onData=function(chunk){this.chunks.push(chunk)};Deflate.prototype.onEnd=function(status){if(status===Z_OK){if(this.options.to==="string"){this.result=this.chunks.join("")}else{this.result=utils.flattenChunks(this.chunks)}}this.chunks=[];this.err=status;this.msg=this.strm.msg};function deflate(input,options){var deflator=new Deflate(options);deflator.push(input,true);if(deflator.err){throw deflator.msg}return deflator.result}function deflateRaw(input,options){options=options||{};options.raw=true;return deflate(input,options)}function gzip(input,options){options=options||{};options.gzip=true;return deflate(input,options)}exports.Deflate=Deflate;exports.deflate=deflate;exports.deflateRaw=deflateRaw;exports.gzip=gzip},{"./utils/common":27,"./utils/strings":28,"./zlib/deflate.js":32,"./zlib/messages":37,"./zlib/zstream":39}],26:[function(_dereq_,module,exports){"use strict";var zlib_inflate=_dereq_("./zlib/inflate.js");var utils=_dereq_("./utils/common");var strings=_dereq_("./utils/strings");var c=_dereq_("./zlib/constants");var msg=_dereq_("./zlib/messages");var zstream=_dereq_("./zlib/zstream");var gzheader=_dereq_("./zlib/gzheader");var Inflate=function(options){this.options=utils.assign({chunkSize:16384,windowBits:0,to:""},options||{});var opt=this.options;if(opt.raw&&opt.windowBits>=0&&opt.windowBits<16){opt.windowBits=-opt.windowBits;if(opt.windowBits===0){opt.windowBits=-15}}if(opt.windowBits>=0&&opt.windowBits<16&&!(options&&options.windowBits)){opt.windowBits+=32}if(opt.windowBits>15&&opt.windowBits<48){if((opt.windowBits&15)===0){opt.windowBits|=15}}this.err=0;this.msg="";this.ended=false;this.chunks=[];this.strm=new zstream;this.strm.avail_out=0;var status=zlib_inflate.inflateInit2(this.strm,opt.windowBits);if(status!==c.Z_OK){throw new Error(msg[status])}this.header=new gzheader;zlib_inflate.inflateGetHeader(this.strm,this.header)};Inflate.prototype.push=function(data,mode){var strm=this.strm;var chunkSize=this.options.chunkSize;var status,_mode;var next_out_utf8,tail,utf8str;if(this.ended){return false}_mode=mode===~~mode?mode:mode===true?c.Z_FINISH:c.Z_NO_FLUSH;if(typeof data==="string"){strm.input=strings.binstring2buf(data)}else{strm.input=data}strm.next_in=0;strm.avail_in=strm.input.length;do{if(strm.avail_out===0){strm.output=new utils.Buf8(chunkSize);strm.next_out=0;strm.avail_out=chunkSize}status=zlib_inflate.inflate(strm,c.Z_NO_FLUSH);if(status!==c.Z_STREAM_END&&status!==c.Z_OK){this.onEnd(status);this.ended=true;return false}if(strm.next_out){if(strm.avail_out===0||status===c.Z_STREAM_END||strm.avail_in===0&&_mode===c.Z_FINISH){if(this.options.to==="string"){next_out_utf8=strings.utf8border(strm.output,strm.next_out);tail=strm.next_out-next_out_utf8;utf8str=strings.buf2string(strm.output,next_out_utf8);strm.next_out=tail;strm.avail_out=chunkSize-tail;if(tail){utils.arraySet(strm.output,strm.output,next_out_utf8,tail,0)}this.onData(utf8str)}else{this.onData(utils.shrinkBuf(strm.output,strm.next_out))}}}}while(strm.avail_in>0&&status!==c.Z_STREAM_END);if(status===c.Z_STREAM_END){_mode=c.Z_FINISH}if(_mode===c.Z_FINISH){status=zlib_inflate.inflateEnd(this.strm);this.onEnd(status);this.ended=true;return status===c.Z_OK}return true};Inflate.prototype.onData=function(chunk){this.chunks.push(chunk)};Inflate.prototype.onEnd=function(status){if(status===c.Z_OK){if(this.options.to==="string"){this.result=this.chunks.join("")}else{this.result=utils.flattenChunks(this.chunks)}}this.chunks=[];this.err=status;this.msg=this.strm.msg};function inflate(input,options){var inflator=new Inflate(options);inflator.push(input,true);if(inflator.err){throw inflator.msg}return inflator.result}function inflateRaw(input,options){options=options||{};options.raw=true;return inflate(input,options)}exports.Inflate=Inflate;exports.inflate=inflate;exports.inflateRaw=inflateRaw;exports.ungzip=inflate},{"./utils/common":27,"./utils/strings":28,"./zlib/constants":30,"./zlib/gzheader":33,"./zlib/inflate.js":35,"./zlib/messages":37,"./zlib/zstream":39}],27:[function(_dereq_,module,exports){"use strict";var TYPED_OK=typeof Uint8Array!=="undefined"&&typeof Uint16Array!=="undefined"&&typeof Int32Array!=="undefined";exports.assign=function(obj){var sources=Array.prototype.slice.call(arguments,1);while(sources.length){var source=sources.shift();if(!source){continue}if(typeof source!=="object"){throw new TypeError(source+"must be non-object")}for(var p in source){if(source.hasOwnProperty(p)){obj[p]=source[p]}}}return obj};exports.shrinkBuf=function(buf,size){if(buf.length===size){return buf}if(buf.subarray){return buf.subarray(0,size)}buf.length=size;return buf};var fnTyped={arraySet:function(dest,src,src_offs,len,dest_offs){if(src.subarray&&dest.subarray){dest.set(src.subarray(src_offs,src_offs+len),dest_offs);return}for(var i=0;i<len;i++){dest[dest_offs+i]=src[src_offs+i]}},flattenChunks:function(chunks){var i,l,len,pos,chunk,result;len=0;for(i=0,l=chunks.length;i<l;i++){len+=chunks[i].length}result=new Uint8Array(len);pos=0;for(i=0,l=chunks.length;i<l;i++){chunk=chunks[i];result.set(chunk,pos);pos+=chunk.length}return result}};var fnUntyped={arraySet:function(dest,src,src_offs,len,dest_offs){for(var i=0;i<len;i++){dest[dest_offs+i]=src[src_offs+i]}},flattenChunks:function(chunks){return[].concat.apply([],chunks)}};exports.setTyped=function(on){if(on){exports.Buf8=Uint8Array;exports.Buf16=Uint16Array;exports.Buf32=Int32Array;exports.assign(exports,fnTyped)}else{exports.Buf8=Array;exports.Buf16=Array;exports.Buf32=Array;exports.assign(exports,fnUntyped)}};exports.setTyped(TYPED_OK)},{}],28:[function(_dereq_,module,exports){"use strict";var utils=_dereq_("./common");var STR_APPLY_OK=true;var STR_APPLY_UIA_OK=true;try{String.fromCharCode.apply(null,[0])}catch(__){STR_APPLY_OK=false}try{String.fromCharCode.apply(null,new Uint8Array(1))}catch(__){STR_APPLY_UIA_OK=false}var _utf8len=new utils.Buf8(256);for(var i=0;i<256;i++){_utf8len[i]=i>=252?6:i>=248?5:i>=240?4:i>=224?3:i>=192?2:1}_utf8len[254]=_utf8len[254]=1;exports.string2buf=function(str){var buf,c,c2,m_pos,i,str_len=str.length,buf_len=0;for(m_pos=0;m_pos<str_len;m_pos++){c=str.charCodeAt(m_pos);if((c&64512)===55296&&m_pos+1<str_len){c2=str.charCodeAt(m_pos+1);if((c2&64512)===56320){c=65536+(c-55296<<10)+(c2-56320);m_pos++}}buf_len+=c<128?1:c<2048?2:c<65536?3:4}buf=new utils.Buf8(buf_len);for(i=0,m_pos=0;i<buf_len;m_pos++){c=str.charCodeAt(m_pos);if((c&64512)===55296&&m_pos+1<str_len){c2=str.charCodeAt(m_pos+1);if((c2&64512)===56320){c=65536+(c-55296<<10)+(c2-56320);m_pos++}}if(c<128){buf[i++]=c}else if(c<2048){buf[i++]=192|c>>>6;buf[i++]=128|c&63}else if(c<65536){buf[i++]=224|c>>>12;buf[i++]=128|c>>>6&63;buf[i++]=128|c&63}else{buf[i++]=240|c>>>18;buf[i++]=128|c>>>12&63;buf[i++]=128|c>>>6&63;buf[i++]=128|c&63}}return buf};function buf2binstring(buf,len){if(len<65537){if(buf.subarray&&STR_APPLY_UIA_OK||!buf.subarray&&STR_APPLY_OK){return String.fromCharCode.apply(null,utils.shrinkBuf(buf,len))}}var result="";for(var i=0;i<len;i++){result+=String.fromCharCode(buf[i])}return result}exports.buf2binstring=function(buf){return buf2binstring(buf,buf.length)};exports.binstring2buf=function(str){var buf=new utils.Buf8(str.length);for(var i=0,len=buf.length;i<len;i++){buf[i]=str.charCodeAt(i)}return buf};exports.buf2string=function(buf,max){var i,out,c,c_len;var len=max||buf.length;var utf16buf=new Array(len*2);for(out=0,i=0;i<len;){c=buf[i++];if(c<128){utf16buf[out++]=c;continue}c_len=_utf8len[c];if(c_len>4){utf16buf[out++]=65533;i+=c_len-1;continue}c&=c_len===2?31:c_len===3?15:7;while(c_len>1&&i<len){c=c<<6|buf[i++]&63;c_len--}if(c_len>1){utf16buf[out++]=65533;continue}if(c<65536){utf16buf[out++]=c}else{c-=65536;utf16buf[out++]=55296|c>>10&1023;utf16buf[out++]=56320|c&1023}}return buf2binstring(utf16buf,out)};exports.utf8border=function(buf,max){var pos;max=max||buf.length;if(max>buf.length){max=buf.length}pos=max-1;while(pos>=0&&(buf[pos]&192)===128){pos--}if(pos<0){return max}if(pos===0){return max}return pos+_utf8len[buf[pos]]>max?pos:max}},{"./common":27}],29:[function(_dereq_,module,exports){"use strict";function adler32(adler,buf,len,pos){var s1=adler&65535|0,s2=adler>>>16&65535|0,n=0;while(len!==0){n=len>2e3?2e3:len;len-=n;do{s1=s1+buf[pos++]|0;s2=s2+s1|0}while(--n);s1%=65521;s2%=65521}return s1|s2<<16|0}module.exports=adler32},{}],30:[function(_dereq_,module,exports){module.exports={Z_NO_FLUSH:0,Z_PARTIAL_FLUSH:1,Z_SYNC_FLUSH:2,Z_FULL_FLUSH:3,Z_FINISH:4,Z_BLOCK:5,Z_TREES:6,Z_OK:0,Z_STREAM_END:1,Z_NEED_DICT:2,Z_ERRNO:-1,Z_STREAM_ERROR:-2,Z_DATA_ERROR:-3,Z_BUF_ERROR:-5,Z_NO_COMPRESSION:0,Z_BEST_SPEED:1,Z_BEST_COMPRESSION:9,Z_DEFAULT_COMPRESSION:-1,Z_FILTERED:1,Z_HUFFMAN_ONLY:2,Z_RLE:3,Z_FIXED:4,Z_DEFAULT_STRATEGY:0,Z_BINARY:0,Z_TEXT:1,Z_UNKNOWN:2,Z_DEFLATED:8}},{}],31:[function(_dereq_,module,exports){"use strict";function makeTable(){var c,table=[];for(var n=0;n<256;n++){c=n;for(var k=0;k<8;k++){c=c&1?3988292384^c>>>1:c>>>1}table[n]=c}return table}var crcTable=makeTable();function crc32(crc,buf,len,pos){var t=crcTable,end=pos+len;crc=crc^-1;for(var i=pos;i<end;i++){crc=crc>>>8^t[(crc^buf[i])&255]}return crc^-1}module.exports=crc32},{}],32:[function(_dereq_,module,exports){"use strict";var utils=_dereq_("../utils/common");var trees=_dereq_("./trees");var adler32=_dereq_("./adler32");var crc32=_dereq_("./crc32");var msg=_dereq_("./messages");var Z_NO_FLUSH=0;var Z_PARTIAL_FLUSH=1;var Z_FULL_FLUSH=3;var Z_FINISH=4;var Z_BLOCK=5;var Z_OK=0;var Z_STREAM_END=1;var Z_STREAM_ERROR=-2;var Z_DATA_ERROR=-3;var Z_BUF_ERROR=-5;var Z_DEFAULT_COMPRESSION=-1;var Z_FILTERED=1;var Z_HUFFMAN_ONLY=2;var Z_RLE=3;var Z_FIXED=4;var Z_DEFAULT_STRATEGY=0;var Z_UNKNOWN=2;var Z_DEFLATED=8;var MAX_MEM_LEVEL=9;var MAX_WBITS=15;var DEF_MEM_LEVEL=8;var LENGTH_CODES=29;var LITERALS=256;var L_CODES=LITERALS+1+LENGTH_CODES;var D_CODES=30;var BL_CODES=19;var HEAP_SIZE=2*L_CODES+1;var MAX_BITS=15;var MIN_MATCH=3;var MAX_MATCH=258;var MIN_LOOKAHEAD=MAX_MATCH+MIN_MATCH+1;var PRESET_DICT=32;var INIT_STATE=42;var EXTRA_STATE=69;var NAME_STATE=73;var COMMENT_STATE=91;var HCRC_STATE=103;var BUSY_STATE=113;var FINISH_STATE=666;var BS_NEED_MORE=1;var BS_BLOCK_DONE=2;var BS_FINISH_STARTED=3;var BS_FINISH_DONE=4;var OS_CODE=3;function err(strm,errorCode){strm.msg=msg[errorCode];return errorCode}function rank(f){return(f<<1)-(f>4?9:0)}function zero(buf){var len=buf.length;while(--len>=0){buf[len]=0}}function flush_pending(strm){var s=strm.state;var len=s.pending;if(len>strm.avail_out){len=strm.avail_out}if(len===0){return}utils.arraySet(strm.output,s.pending_buf,s.pending_out,len,strm.next_out);strm.next_out+=len;s.pending_out+=len;strm.total_out+=len;strm.avail_out-=len;s.pending-=len;if(s.pending===0){s.pending_out=0}}function flush_block_only(s,last){trees._tr_flush_block(s,s.block_start>=0?s.block_start:-1,s.strstart-s.block_start,last);s.block_start=s.strstart;flush_pending(s.strm)}function put_byte(s,b){s.pending_buf[s.pending++]=b}function putShortMSB(s,b){s.pending_buf[s.pending++]=b>>>8&255;s.pending_buf[s.pending++]=b&255}function read_buf(strm,buf,start,size){var len=strm.avail_in;if(len>size){len=size}if(len===0){return 0}strm.avail_in-=len;utils.arraySet(buf,strm.input,strm.next_in,len,start);if(strm.state.wrap===1){strm.adler=adler32(strm.adler,buf,len,start)}else if(strm.state.wrap===2){strm.adler=crc32(strm.adler,buf,len,start)}strm.next_in+=len;strm.total_in+=len;return len}function longest_match(s,cur_match){var chain_length=s.max_chain_length;var scan=s.strstart;var match;var len;var best_len=s.prev_length;var nice_match=s.nice_match;var limit=s.strstart>s.w_size-MIN_LOOKAHEAD?s.strstart-(s.w_size-MIN_LOOKAHEAD):0;var _win=s.window;var wmask=s.w_mask;var prev=s.prev;var strend=s.strstart+MAX_MATCH;var scan_end1=_win[scan+best_len-1];var scan_end=_win[scan+best_len];if(s.prev_length>=s.good_match){chain_length>>=2}if(nice_match>s.lookahead){nice_match=s.lookahead}do{match=cur_match;if(_win[match+best_len]!==scan_end||_win[match+best_len-1]!==scan_end1||_win[match]!==_win[scan]||_win[++match]!==_win[scan+1]){continue}scan+=2;match++;do{}while(_win[++scan]===_win[++match]&&_win[++scan]===_win[++match]&&_win[++scan]===_win[++match]&&_win[++scan]===_win[++match]&&_win[++scan]===_win[++match]&&_win[++scan]===_win[++match]&&_win[++scan]===_win[++match]&&_win[++scan]===_win[++match]&&scan<strend);len=MAX_MATCH-(strend-scan);scan=strend-MAX_MATCH;if(len>best_len){s.match_start=cur_match;best_len=len;if(len>=nice_match){break}scan_end1=_win[scan+best_len-1];scan_end=_win[scan+best_len]}}while((cur_match=prev[cur_match&wmask])>limit&&--chain_length!==0);if(best_len<=s.lookahead){return best_len}return s.lookahead}function fill_window(s){var _w_size=s.w_size;var p,n,m,more,str;do{more=s.window_size-s.lookahead-s.strstart;if(s.strstart>=_w_size+(_w_size-MIN_LOOKAHEAD)){utils.arraySet(s.window,s.window,_w_size,_w_size,0);s.match_start-=_w_size;s.strstart-=_w_size;s.block_start-=_w_size;n=s.hash_size;p=n;do{m=s.head[--p];s.head[p]=m>=_w_size?m-_w_size:0}while(--n);n=_w_size;p=n;do{m=s.prev[--p];s.prev[p]=m>=_w_size?m-_w_size:0}while(--n);more+=_w_size}if(s.strm.avail_in===0){break}n=read_buf(s.strm,s.window,s.strstart+s.lookahead,more);s.lookahead+=n;if(s.lookahead+s.insert>=MIN_MATCH){str=s.strstart-s.insert;s.ins_h=s.window[str];s.ins_h=(s.ins_h<<s.hash_shift^s.window[str+1])&s.hash_mask;while(s.insert){s.ins_h=(s.ins_h<<s.hash_shift^s.window[str+MIN_MATCH-1])&s.hash_mask;s.prev[str&s.w_mask]=s.head[s.ins_h];s.head[s.ins_h]=str;str++;s.insert--;if(s.lookahead+s.insert<MIN_MATCH){break}}}}while(s.lookahead<MIN_LOOKAHEAD&&s.strm.avail_in!==0)}function deflate_stored(s,flush){var max_block_size=65535;if(max_block_size>s.pending_buf_size-5){max_block_size=s.pending_buf_size-5}for(;;){if(s.lookahead<=1){fill_window(s);if(s.lookahead===0&&flush===Z_NO_FLUSH){return BS_NEED_MORE}if(s.lookahead===0){break}}s.strstart+=s.lookahead;s.lookahead=0;var max_start=s.block_start+max_block_size;if(s.strstart===0||s.strstart>=max_start){s.lookahead=s.strstart-max_start;s.strstart=max_start;flush_block_only(s,false);if(s.strm.avail_out===0){return BS_NEED_MORE}}if(s.strstart-s.block_start>=s.w_size-MIN_LOOKAHEAD){flush_block_only(s,false);if(s.strm.avail_out===0){return BS_NEED_MORE}}}s.insert=0;if(flush===Z_FINISH){flush_block_only(s,true);if(s.strm.avail_out===0){return BS_FINISH_STARTED}return BS_FINISH_DONE}if(s.strstart>s.block_start){flush_block_only(s,false);if(s.strm.avail_out===0){return BS_NEED_MORE}}return BS_NEED_MORE}function deflate_fast(s,flush){var hash_head;var bflush;for(;;){if(s.lookahead<MIN_LOOKAHEAD){fill_window(s);if(s.lookahead<MIN_LOOKAHEAD&&flush===Z_NO_FLUSH){return BS_NEED_MORE}if(s.lookahead===0){break}}hash_head=0;if(s.lookahead>=MIN_MATCH){s.ins_h=(s.ins_h<<s.hash_shift^s.window[s.strstart+MIN_MATCH-1])&s.hash_mask;hash_head=s.prev[s.strstart&s.w_mask]=s.head[s.ins_h];s.head[s.ins_h]=s.strstart}if(hash_head!==0&&s.strstart-hash_head<=s.w_size-MIN_LOOKAHEAD){s.match_length=longest_match(s,hash_head)}if(s.match_length>=MIN_MATCH){bflush=trees._tr_tally(s,s.strstart-s.match_start,s.match_length-MIN_MATCH);s.lookahead-=s.match_length;if(s.match_length<=s.max_lazy_match&&s.lookahead>=MIN_MATCH){s.match_length--;do{s.strstart++;s.ins_h=(s.ins_h<<s.hash_shift^s.window[s.strstart+MIN_MATCH-1])&s.hash_mask;hash_head=s.prev[s.strstart&s.w_mask]=s.head[s.ins_h];s.head[s.ins_h]=s.strstart}while(--s.match_length!==0);s.strstart++}else{s.strstart+=s.match_length;s.match_length=0;s.ins_h=s.window[s.strstart];s.ins_h=(s.ins_h<<s.hash_shift^s.window[s.strstart+1])&s.hash_mask}}else{bflush=trees._tr_tally(s,0,s.window[s.strstart]);s.lookahead--;s.strstart++}if(bflush){flush_block_only(s,false);if(s.strm.avail_out===0){return BS_NEED_MORE}}}s.insert=s.strstart<MIN_MATCH-1?s.strstart:MIN_MATCH-1;if(flush===Z_FINISH){flush_block_only(s,true);if(s.strm.avail_out===0){return BS_FINISH_STARTED}return BS_FINISH_DONE}if(s.last_lit){flush_block_only(s,false);if(s.strm.avail_out===0){return BS_NEED_MORE}}return BS_BLOCK_DONE}function deflate_slow(s,flush){var hash_head;var bflush;var max_insert;for(;;){if(s.lookahead<MIN_LOOKAHEAD){fill_window(s);if(s.lookahead<MIN_LOOKAHEAD&&flush===Z_NO_FLUSH){return BS_NEED_MORE}if(s.lookahead===0){break}}hash_head=0;if(s.lookahead>=MIN_MATCH){s.ins_h=(s.ins_h<<s.hash_shift^s.window[s.strstart+MIN_MATCH-1])&s.hash_mask;hash_head=s.prev[s.strstart&s.w_mask]=s.head[s.ins_h];s.head[s.ins_h]=s.strstart}s.prev_length=s.match_length;s.prev_match=s.match_start;s.match_length=MIN_MATCH-1;if(hash_head!==0&&s.prev_length<s.max_lazy_match&&s.strstart-hash_head<=s.w_size-MIN_LOOKAHEAD){s.match_length=longest_match(s,hash_head);if(s.match_length<=5&&(s.strategy===Z_FILTERED||s.match_length===MIN_MATCH&&s.strstart-s.match_start>4096)){s.match_length=MIN_MATCH-1}}if(s.prev_length>=MIN_MATCH&&s.match_length<=s.prev_length){max_insert=s.strstart+s.lookahead-MIN_MATCH;bflush=trees._tr_tally(s,s.strstart-1-s.prev_match,s.prev_length-MIN_MATCH);s.lookahead-=s.prev_length-1;s.prev_length-=2;do{if(++s.strstart<=max_insert){s.ins_h=(s.ins_h<<s.hash_shift^s.window[s.strstart+MIN_MATCH-1])&s.hash_mask;hash_head=s.prev[s.strstart&s.w_mask]=s.head[s.ins_h];s.head[s.ins_h]=s.strstart}}while(--s.prev_length!==0);s.match_available=0;s.match_length=MIN_MATCH-1;s.strstart++;if(bflush){flush_block_only(s,false);if(s.strm.avail_out===0){return BS_NEED_MORE}}}else if(s.match_available){bflush=trees._tr_tally(s,0,s.window[s.strstart-1]);if(bflush){flush_block_only(s,false)}s.strstart++;s.lookahead--;if(s.strm.avail_out===0){return BS_NEED_MORE}}else{s.match_available=1;s.strstart++;s.lookahead--}}if(s.match_available){bflush=trees._tr_tally(s,0,s.window[s.strstart-1]);s.match_available=0}s.insert=s.strstart<MIN_MATCH-1?s.strstart:MIN_MATCH-1;if(flush===Z_FINISH){flush_block_only(s,true);if(s.strm.avail_out===0){return BS_FINISH_STARTED}return BS_FINISH_DONE}if(s.last_lit){flush_block_only(s,false);if(s.strm.avail_out===0){return BS_NEED_MORE}}return BS_BLOCK_DONE}function deflate_rle(s,flush){var bflush;var prev;var scan,strend;var _win=s.window;for(;;){if(s.lookahead<=MAX_MATCH){fill_window(s);if(s.lookahead<=MAX_MATCH&&flush===Z_NO_FLUSH){return BS_NEED_MORE}if(s.lookahead===0){break}}s.match_length=0;if(s.lookahead>=MIN_MATCH&&s.strstart>0){scan=s.strstart-1;prev=_win[scan];if(prev===_win[++scan]&&prev===_win[++scan]&&prev===_win[++scan]){strend=s.strstart+MAX_MATCH;do{}while(prev===_win[++scan]&&prev===_win[++scan]&&prev===_win[++scan]&&prev===_win[++scan]&&prev===_win[++scan]&&prev===_win[++scan]&&prev===_win[++scan]&&prev===_win[++scan]&&scan<strend);s.match_length=MAX_MATCH-(strend-scan);if(s.match_length>s.lookahead){s.match_length=s.lookahead}}}if(s.match_length>=MIN_MATCH){bflush=trees._tr_tally(s,1,s.match_length-MIN_MATCH);s.lookahead-=s.match_length;s.strstart+=s.match_length;s.match_length=0}else{bflush=trees._tr_tally(s,0,s.window[s.strstart]);s.lookahead--;s.strstart++}if(bflush){flush_block_only(s,false);if(s.strm.avail_out===0){return BS_NEED_MORE}}}s.insert=0;if(flush===Z_FINISH){flush_block_only(s,true);if(s.strm.avail_out===0){return BS_FINISH_STARTED}return BS_FINISH_DONE}if(s.last_lit){flush_block_only(s,false);if(s.strm.avail_out===0){return BS_NEED_MORE}}return BS_BLOCK_DONE}function deflate_huff(s,flush){var bflush;
@@ -11,3 +820,654 @@ return o}function parse_PtgName(blob,length){var type=blob.read_shift(1)>>>5&3;v
 }function write_ws_xml_cell(cell,ref,ws,opts,idx,wb){if(cell.v===undefined)return"";var vv="";var oldt=cell.t,oldv=cell.v;switch(cell.t){case"b":vv=cell.v?"1":"0";break;case"n":vv=""+cell.v;break;case"e":vv=BErr[cell.v];break;case"d":if(opts.cellDates)vv=new Date(cell.v).toISOString();else{cell.t="n";vv=""+(cell.v=datenum(cell.v));if(typeof cell.z==="undefined")cell.z=SSF._table[14]}break;default:vv=cell.v;break}var v=writetag("v",escapexml(vv)),o={r:ref};var os=get_cell_style(opts.cellXfs,cell,opts);if(os!==0)o.s=os;switch(cell.t){case"n":break;case"d":o.t="d";break;case"b":o.t="b";break;case"e":o.t="e";break;default:if(opts.bookSST){v=writetag("v",""+get_sst_id(opts.Strings,cell.v));o.t="s";break}o.t="str";break}if(cell.t!=oldt){cell.t=oldt;cell.v=oldv}return writextag("c",v,o)}var parse_ws_xml_data=function parse_ws_xml_data_factory(){var cellregex=/<(?:\w+:)?c[ >]/,rowregex=/<\/(?:\w+:)?row>/;var rregex=/r=["']([^"']*)["']/,isregex=/<is>([\S\s]*?)<\/is>/;var match_v=matchtag("v"),match_f=matchtag("f");return function parse_ws_xml_data(sdata,s,opts,guess){var ri=0,x="",cells=[],cref=[],idx=0,i=0,cc=0,d="",p;var tag,tagr=0,tagc=0;var sstr;var fmtid=0,fillid=0,do_format=Array.isArray(styles.CellXf),cf;for(var marr=sdata.split(rowregex),mt=0,marrlen=marr.length;mt!=marrlen;++mt){x=marr[mt].trim();var xlen=x.length;if(xlen===0)continue;for(ri=0;ri<xlen;++ri)if(x.charCodeAt(ri)===62)break;++ri;tag=parsexmltag(x.substr(0,ri),true);tagr=typeof tag.r!=="undefined"?parseInt(tag.r,10):tagr+1;tagc=-1;if(opts.sheetRows&&opts.sheetRows<tagr)continue;if(guess.s.r>tagr-1)guess.s.r=tagr-1;if(guess.e.r<tagr-1)guess.e.r=tagr-1;cells=x.substr(ri).split(cellregex);for(ri=typeof tag.r==="undefined"?0:1;ri!=cells.length;++ri){x=cells[ri].trim();if(x.length===0)continue;cref=x.match(rregex);idx=ri;i=0;cc=0;x="<c "+(x.substr(0,1)=="<"?">":"")+x;if(cref!==null&&cref.length===2){idx=0;d=cref[1];for(i=0;i!=d.length;++i){if((cc=d.charCodeAt(i)-64)<1||cc>26)break;idx=26*idx+cc}--idx;tagc=idx}else++tagc;for(i=0;i!=x.length;++i)if(x.charCodeAt(i)===62)break;++i;tag=parsexmltag(x.substr(0,i),true);if(!tag.r)tag.r=utils.encode_cell({r:tagr-1,c:tagc});d=x.substr(i);p={t:""};if((cref=d.match(match_v))!==null&&cref[1]!=="")p.v=unescapexml(cref[1]);if(opts.cellFormula&&(cref=d.match(match_f))!==null)p.f=unescapexml(cref[1]);if(tag.t===undefined&&p.v===undefined){if(!opts.sheetStubs)continue;p.t="stub"}else p.t=tag.t||"n";if(guess.s.c>idx)guess.s.c=idx;if(guess.e.c<idx)guess.e.c=idx;switch(p.t){case"n":p.v=parseFloat(p.v);break;case"s":sstr=strs[parseInt(p.v,10)];p.v=sstr.t;p.r=sstr.r;if(opts.cellHTML)p.h=sstr.h;break;case"str":p.t="s";p.v=p.v!=null?utf8read(p.v):"";if(opts.cellHTML)p.h=p.v;break;case"inlineStr":cref=d.match(isregex);p.t="s";if(cref!==null){sstr=parse_si(cref[1]);p.v=sstr.t}else p.v="";break;case"b":p.v=parsexmlbool(p.v);break;case"d":if(!opts.cellDates){p.v=datenum(p.v);p.t="n"}break;case"e":p.w=p.v;p.v=RBErr[p.v];break}fmtid=fillid=0;if(do_format&&tag.s!==undefined){cf=styles.CellXf[tag.s];if(cf!=null){if(cf.numFmtId!=null)fmtid=cf.numFmtId;if(opts.cellStyles&&cf.fillId!=null)fillid=cf.fillId}}safe_format(p,fmtid,fillid,opts);s[tag.r]=p}}}}();function write_ws_xml_data(ws,opts,idx,wb){var o=[],r=[],range=safe_decode_range(ws["!ref"]),cell,ref,rr="",cols=[],R,C;for(C=range.s.c;C<=range.e.c;++C)cols[C]=encode_col(C);for(R=range.s.r;R<=range.e.r;++R){r=[];rr=encode_row(R);for(C=range.s.c;C<=range.e.c;++C){ref=cols[C]+rr;if(ws[ref]===undefined)continue;if((cell=write_ws_xml_cell(ws[ref],ref,ws,opts,idx,wb))!=null)r.push(cell)}if(r.length>0)o[o.length]=writextag("row",r.join(""),{r:rr})}return o.join("")}var WS_XML_ROOT=writextag("worksheet",null,{xmlns:XMLNS.main[0],"xmlns:r":XMLNS.r});function write_ws_xml(idx,opts,wb){var o=[XML_HEADER,WS_XML_ROOT];var s=wb.SheetNames[idx],sidx=0,rdata="";var ws=wb.Sheets[s];if(ws===undefined)ws={};var ref=ws["!ref"];if(ref===undefined)ref="A1";o[o.length]=writextag("dimension",null,{ref:ref});if(ws["!cols"]!==undefined&&ws["!cols"].length>0)o[o.length]=write_ws_xml_cols(ws,ws["!cols"]);o[sidx=o.length]="<sheetData/>";if(ws["!ref"]!==undefined){rdata=write_ws_xml_data(ws,opts,idx,wb);if(rdata.length>0)o[o.length]=rdata}if(o.length>sidx+1){o[o.length]="</sheetData>";o[sidx]=o[sidx].replace("/>",">")}if(ws["!merges"]!==undefined&&ws["!merges"].length>0)o[o.length]=write_ws_xml_merges(ws["!merges"]);if(o.length>2){o[o.length]="</worksheet>";o[1]=o[1].replace("/>",">")}return o.join("")}function parse_BrtRowHdr(data,length){var z=[];z.r=data.read_shift(4);data.l+=length-4;return z}var parse_BrtWsDim=parse_UncheckedRfX;var write_BrtWsDim=write_UncheckedRfX;function parse_BrtWsProp(data,length){var z={};data.l+=19;z.name=parse_XLSBCodeName(data,length-19);return z}function parse_BrtCellBlank(data,length){var cell=parse_XLSBCell(data);return[cell]}function write_BrtCellBlank(cell,val,o){if(o==null)o=new_buf(8);return write_XLSBCell(val,o)}function parse_BrtCellBool(data,length){var cell=parse_XLSBCell(data);var fBool=data.read_shift(1);return[cell,fBool,"b"]}function parse_BrtCellError(data,length){var cell=parse_XLSBCell(data);var fBool=data.read_shift(1);return[cell,fBool,"e"]}function parse_BrtCellIsst(data,length){var cell=parse_XLSBCell(data);var isst=data.read_shift(4);return[cell,isst,"s"]}function parse_BrtCellReal(data,length){var cell=parse_XLSBCell(data);var value=parse_Xnum(data);return[cell,value,"n"]}function parse_BrtCellRk(data,length){var cell=parse_XLSBCell(data);var value=parse_RkNumber(data);return[cell,value,"n"]}function parse_BrtCellSt(data,length){var cell=parse_XLSBCell(data);var value=parse_XLWideString(data);return[cell,value,"str"]}function parse_BrtFmlaBool(data,length,opts){var cell=parse_XLSBCell(data);var value=data.read_shift(1);var o=[cell,value,"b"];if(opts.cellFormula){var formula=parse_XLSBCellParsedFormula(data,length-9);o[3]=""}else data.l+=length-9;return o}function parse_BrtFmlaError(data,length,opts){var cell=parse_XLSBCell(data);var value=data.read_shift(1);var o=[cell,value,"e"];if(opts.cellFormula){var formula=parse_XLSBCellParsedFormula(data,length-9);o[3]=""}else data.l+=length-9;return o}function parse_BrtFmlaNum(data,length,opts){var cell=parse_XLSBCell(data);var value=parse_Xnum(data);var o=[cell,value,"n"];if(opts.cellFormula){var formula=parse_XLSBCellParsedFormula(data,length-16);o[3]=""}else data.l+=length-16;return o}function parse_BrtFmlaString(data,length,opts){var start=data.l;var cell=parse_XLSBCell(data);var value=parse_XLWideString(data);var o=[cell,value,"str"];if(opts.cellFormula){var formula=parse_XLSBCellParsedFormula(data,start+length-data.l)}else data.l=start+length;return o}var parse_BrtMergeCell=parse_UncheckedRfX;function parse_BrtHLink(data,length,opts){var end=data.l+length;var rfx=parse_UncheckedRfX(data,16);var relId=parse_XLNullableWideString(data);var loc=parse_XLWideString(data);var tooltip=parse_XLWideString(data);var display=parse_XLWideString(data);data.l=end;return{rfx:rfx,relId:relId,loc:loc,tooltip:tooltip,display:display}}function parse_ws_bin(data,opts,rels){if(!data)return data;if(!rels)rels={"!id":{}};var s={};var ref;var refguess={s:{r:1e6,c:1e6},e:{r:0,c:0}};var pass=false,end=false;var row,p,cf,R,C,addr,sstr,rr;var mergecells=[];recordhopper(data,function ws_parse(val,R){if(end)return;switch(R.n){case"BrtWsDim":ref=val;break;case"BrtRowHdr":row=val;if(opts.sheetRows&&opts.sheetRows<=row.r)end=true;rr=encode_row(row.r);break;case"BrtFmlaBool":case"BrtFmlaError":case"BrtFmlaNum":case"BrtFmlaString":case"BrtCellBool":case"BrtCellError":case"BrtCellIsst":case"BrtCellReal":case"BrtCellRk":case"BrtCellSt":p={t:val[2]};switch(val[2]){case"n":p.v=val[1];break;case"s":sstr=strs[val[1]];p.v=sstr.t;p.r=sstr.r;break;case"b":p.v=val[1]?true:false;break;case"e":p.v=val[1];p.w=BErr[p.v];break;case"str":p.t="s";p.v=utf8read(val[1]);break}if(opts.cellFormula&&val.length>3)p.f=val[3];if(cf=styles.CellXf[val[0].iStyleRef])safe_format(p,cf.ifmt,null,opts);s[encode_col(C=val[0].c)+rr]=p;if(refguess.s.r>row.r)refguess.s.r=row.r;if(refguess.s.c>C)refguess.s.c=C;if(refguess.e.r<row.r)refguess.e.r=row.r;if(refguess.e.c<C)refguess.e.c=C;break;case"BrtCellBlank":if(!opts.sheetStubs)break;p={t:"s",v:undefined};s[encode_col(C=val[0].c)+rr]=p;if(refguess.s.r>row.r)refguess.s.r=row.r;if(refguess.s.c>C)refguess.s.c=C;if(refguess.e.r<row.r)refguess.e.r=row.r;if(refguess.e.c<C)refguess.e.c=C;break;case"BrtBeginMergeCells":break;case"BrtEndMergeCells":break;case"BrtMergeCell":mergecells.push(val);break;case"BrtHLink":var rel=rels["!id"][val.relId];if(rel){val.Target=rel.Target;if(val.loc)val.Target+="#"+val.loc;val.Rel=rel}for(R=val.rfx.s.r;R<=val.rfx.e.r;++R)for(C=val.rfx.s.c;C<=val.rfx.e.c;++C){addr=encode_cell({c:C,r:R});if(!s[addr])s[addr]={t:"s",v:undefined};s[addr].l=val}break;case"BrtArrFmla":break;case"BrtShrFmla":break;case"BrtBeginSheet":break;case"BrtWsProp":break;case"BrtSheetCalcProp":break;case"BrtBeginWsViews":break;case"BrtBeginWsView":break;case"BrtPane":break;case"BrtSel":break;case"BrtEndWsView":break;case"BrtEndWsViews":break;case"BrtACBegin":break;case"BrtRwDescent":break;case"BrtACEnd":break;case"BrtWsFmtInfoEx14":break;case"BrtWsFmtInfo":break;case"BrtBeginColInfos":break;case"BrtColInfo":break;case"BrtEndColInfos":break;case"BrtBeginSheetData":break;case"BrtEndSheetData":break;case"BrtSheetProtection":break;case"BrtPrintOptions":break;case"BrtMargins":break;case"BrtPageSetup":break;case"BrtFRTBegin":pass=true;break;case"BrtFRTEnd":pass=false;break;case"BrtEndSheet":break;case"BrtDrawing":break;case"BrtLegacyDrawing":break;case"BrtLegacyDrawingHF":break;case"BrtPhoneticInfo":break;case"BrtBeginHeaderFooter":break;case"BrtEndHeaderFooter":break;case"BrtBrk":break;case"BrtBeginRwBrk":break;case"BrtEndRwBrk":break;case"BrtBeginColBrk":break;case"BrtEndColBrk":break;case"BrtBeginUserShViews":break;case"BrtBeginUserShView":break;case"BrtEndUserShView":break;case"BrtEndUserShViews":break;case"BrtBkHim":break;case"BrtBeginOleObjects":break;case"BrtOleObject":break;case"BrtEndOleObjects":break;case"BrtBeginListParts":break;case"BrtListPart":break;case"BrtEndListParts":break;case"BrtBeginSortState":break;case"BrtBeginSortCond":break;case"BrtEndSortCond":break;case"BrtEndSortState":break;case"BrtBeginConditionalFormatting":break;case"BrtEndConditionalFormatting":break;case"BrtBeginCFRule":break;case"BrtEndCFRule":break;case"BrtBeginDVals":break;case"BrtDVal":break;case"BrtEndDVals":break;case"BrtRangeProtection":break;case"BrtBeginDCon":break;case"BrtEndDCon":break;case"BrtBeginDRefs":break;case"BrtDRef":break;case"BrtEndDRefs":break;case"BrtBeginActiveXControls":break;case"BrtActiveX":break;case"BrtEndActiveXControls":break;case"BrtBeginAFilter":break;case"BrtEndAFilter":break;case"BrtBeginFilterColumn":break;case"BrtBeginFilters":break;case"BrtFilter":break;case"BrtEndFilters":break;case"BrtEndFilterColumn":break;case"BrtDynamicFilter":break;case"BrtTop10Filter":break;case"BrtBeginCustomFilters":break;case"BrtCustomFilter":break;case"BrtEndCustomFilters":break;case"BrtBeginSmartTags":break;case"BrtBeginCellSmartTags":break;case"BrtBeginCellSmartTag":break;case"BrtCellSmartTagProperty":break;case"BrtEndCellSmartTag":break;case"BrtEndCellSmartTags":break;case"BrtEndSmartTags":break;case"BrtBeginCellWatches":break;case"BrtCellWatch":break;case"BrtEndCellWatches":break;case"BrtTable":break;case"BrtBeginCellIgnoreECs":break;case"BrtCellIgnoreEC":break;case"BrtEndCellIgnoreECs":break;default:if(!pass||opts.WTF)throw new Error("Unexpected record "+R.n)}},opts);if(!s["!ref"]&&(refguess.s.r<1e6||ref.e.r>0||ref.e.c>0||ref.s.r>0||ref.s.c>0))s["!ref"]=encode_range(ref);if(opts.sheetRows&&s["!ref"]){var tmpref=safe_decode_range(s["!ref"]);if(opts.sheetRows<+tmpref.e.r){tmpref.e.r=opts.sheetRows-1;if(tmpref.e.r>refguess.e.r)tmpref.e.r=refguess.e.r;if(tmpref.e.r<tmpref.s.r)tmpref.s.r=tmpref.e.r;if(tmpref.e.c>refguess.e.c)tmpref.e.c=refguess.e.c;if(tmpref.e.c<tmpref.s.c)tmpref.s.c=tmpref.e.c;s["!fullref"]=s["!ref"];s["!ref"]=encode_range(tmpref)}}if(mergecells.length>0)s["!merges"]=mergecells;return s}function write_ws_bin_cell(ba,cell,R,C,opts){if(cell.v===undefined)return"";var vv="";switch(cell.t){case"b":vv=cell.v?"1":"0";break;case"n":case"e":vv=""+cell.v;break;default:vv=cell.v;break}var o={r:R,c:C};o.s=get_cell_style(opts.cellXfs,cell,opts);switch(cell.t){case"s":case"str":if(opts.bookSST){vv=get_sst_id(opts.Strings,cell.v);o.t="s";break}o.t="str";break;case"n":break;case"b":o.t="b";break;case"e":o.t="e";break}write_record(ba,"BrtCellBlank",write_BrtCellBlank(cell,o))}function write_CELLTABLE(ba,ws,idx,opts,wb){var range=safe_decode_range(ws["!ref"]||"A1"),ref,rr="",cols=[];write_record(ba,"BrtBeginSheetData");for(var R=range.s.r;R<=range.e.r;++R){rr=encode_row(R);for(var C=range.s.c;C<=range.e.c;++C){if(R===range.s.r)cols[C]=encode_col(C);ref=cols[C]+rr;if(!ws[ref])continue;write_ws_bin_cell(ba,ws[ref],R,C,opts)}}write_record(ba,"BrtEndSheetData")}function write_ws_bin(idx,opts,wb){var ba=buf_array();var s=wb.SheetNames[idx],ws=wb.Sheets[s]||{};var r=safe_decode_range(ws["!ref"]||"A1");write_record(ba,"BrtBeginSheet");write_record(ba,"BrtWsDim",write_BrtWsDim(r));write_CELLTABLE(ba,ws,idx,opts,wb);write_record(ba,"BrtEndSheet");return ba.end()}var WBPropsDef=[["allowRefreshQuery","0"],["autoCompressPictures","1"],["backupFile","0"],["checkCompatibility","0"],["codeName",""],["date1904","0"],["dateCompatibility","1"],["filterPrivacy","0"],["hidePivotFieldList","0"],["promptedSolutions","0"],["publishItems","0"],["refreshAllConnections",false],["saveExternalLinkValues","1"],["showBorderUnselectedTables","1"],["showInkAnnotation","1"],["showObjects","all"],["showPivotChartFilter","0"]];var WBViewDef=[["activeTab","0"],["autoFilterDateGrouping","1"],["firstSheet","0"],["minimized","0"],["showHorizontalScroll","1"],["showSheetTabs","1"],["showVerticalScroll","1"],["tabRatio","600"],["visibility","visible"]];var SheetDef=[["state","visible"]];var CalcPrDef=[["calcCompleted","true"],["calcMode","auto"],["calcOnSave","true"],["concurrentCalc","true"],["fullCalcOnLoad","false"],["fullPrecision","true"],["iterate","false"],["iterateCount","100"],["iterateDelta","0.001"],["refMode","A1"]];var CustomWBViewDef=[["autoUpdate","false"],["changesSavedWin","false"],["includeHiddenRowCol","true"],["includePrintSettings","true"],["maximized","false"],["minimized","false"],["onlySync","false"],["personalView","false"],["showComments","commIndicator"],["showFormulaBar","true"],["showHorizontalScroll","true"],["showObjects","all"],["showSheetTabs","true"],["showStatusbar","true"],["showVerticalScroll","true"],["tabRatio","600"],["xWindow","0"],["yWindow","0"]];function push_defaults_array(target,defaults){for(var j=0;j!=target.length;++j){var w=target[j];for(var i=0;i!=defaults.length;++i){var z=defaults[i];if(w[z[0]]==null)w[z[0]]=z[1]}}}function push_defaults(target,defaults){for(var i=0;i!=defaults.length;++i){var z=defaults[i];if(target[z[0]]==null)target[z[0]]=z[1]}}function parse_wb_defaults(wb){push_defaults(wb.WBProps,WBPropsDef);push_defaults(wb.CalcPr,CalcPrDef);push_defaults_array(wb.WBView,WBViewDef);push_defaults_array(wb.Sheets,SheetDef);_ssfopts.date1904=parsexmlbool(wb.WBProps.date1904,"date1904")}var wbnsregex=/<\w+:workbook/;function parse_wb_xml(data,opts){var wb={AppVersion:{},WBProps:{},WBView:[],Sheets:[],CalcPr:{},xmlns:""};var pass=false,xmlns="xmlns";data.match(tagregex).forEach(function xml_wb(x){var y=parsexmltag(x);switch(strip_ns(y[0])){case"<?xml":break;case"<workbook":if(x.match(wbnsregex))xmlns="xmlns"+x.match(/<(\w+):/)[1];wb.xmlns=y[xmlns];break;case"</workbook>":break;case"<fileVersion":delete y[0];wb.AppVersion=y;break;case"<fileVersion/>":break;case"<fileSharing":case"<fileSharing/>":break;case"<workbookPr":delete y[0];wb.WBProps=y;break;case"<workbookPr/>":delete y[0];wb.WBProps=y;break;case"<workbookProtection":break;case"<workbookProtection/>":break;case"<bookViews>":case"</bookViews>":break;case"<workbookView":delete y[0];wb.WBView.push(y);break;case"<sheets>":case"</sheets>":break;case"<sheet":delete y[0];y.name=utf8read(y.name);wb.Sheets.push(y);break;case"<functionGroups":case"<functionGroups/>":break;case"<functionGroup":break;case"<externalReferences":case"</externalReferences>":case"<externalReferences>":break;case"<externalReference":break;case"<definedNames/>":break;case"<definedNames>":case"<definedNames":pass=true;break;case"</definedNames>":pass=false;break;case"<definedName":case"<definedName/>":case"</definedName>":break;case"<calcPr":delete y[0];wb.CalcPr=y;break;case"<calcPr/>":delete y[0];wb.CalcPr=y;break;case"<oleSize":break;case"<customWorkbookViews>":case"</customWorkbookViews>":case"<customWorkbookViews":break;case"<customWorkbookView":case"</customWorkbookView>":break;case"<pivotCaches>":case"</pivotCaches>":case"<pivotCaches":break;case"<pivotCache":break;case"<smartTagPr":case"<smartTagPr/>":break;case"<smartTagTypes":case"<smartTagTypes>":case"</smartTagTypes>":break;case"<smartTagType":break;case"<webPublishing":case"<webPublishing/>":break;case"<fileRecoveryPr":case"<fileRecoveryPr/>":break;case"<webPublishObjects>":case"<webPublishObjects":case"</webPublishObjects>":break;case"<webPublishObject":break;case"<extLst>":case"</extLst>":case"<extLst/>":break;case"<ext":pass=true;break;case"</ext>":pass=false;break;case"<ArchID":break;case"<AlternateContent":pass=true;break;case"</AlternateContent>":pass=false;break;default:if(!pass&&opts.WTF)throw"unrecognized "+y[0]+" in workbook"}});if(XMLNS.main.indexOf(wb.xmlns)===-1)throw new Error("Unknown Namespace: "+wb.xmlns);parse_wb_defaults(wb);return wb}var WB_XML_ROOT=writextag("workbook",null,{xmlns:XMLNS.main[0],"xmlns:r":XMLNS.r});function safe1904(wb){try{return parsexmlbool(wb.Workbook.WBProps.date1904)?"true":"false"}catch(e){return"false"}}function write_wb_xml(wb,opts){var o=[XML_HEADER];o[o.length]=WB_XML_ROOT;o[o.length]=writextag("workbookPr",null,{date1904:safe1904(wb)});o[o.length]="<sheets>";for(var i=0;i!=wb.SheetNames.length;++i)o[o.length]=writextag("sheet",null,{name:wb.SheetNames[i].substr(0,31),sheetId:""+(i+1),"r:id":"rId"+(i+1)});o[o.length]="</sheets>";if(o.length>2){o[o.length]="</workbook>";o[1]=o[1].replace("/>",">")}return o.join("")}function parse_BrtBundleSh(data,length){var z={};z.hsState=data.read_shift(4);z.iTabID=data.read_shift(4);z.strRelID=parse_RelID(data,length-8);z.name=parse_XLWideString(data);return z}function write_BrtBundleSh(data,o){if(!o)o=new_buf(127);o.write_shift(4,data.hsState);o.write_shift(4,data.iTabID);write_RelID(data.strRelID,o);write_XLWideString(data.name.substr(0,31),o);return o}function parse_BrtWbProp(data,length){data.read_shift(4);var dwThemeVersion=data.read_shift(4);var strName=length>8?parse_XLWideString(data):"";return[dwThemeVersion,strName]}function write_BrtWbProp(data,o){if(!o)o=new_buf(8);o.write_shift(4,0);o.write_shift(4,0);return o}function parse_BrtFRTArchID$(data,length){var o={};data.read_shift(4);o.ArchID=data.read_shift(4);data.l+=length-8;return o}function parse_wb_bin(data,opts){var wb={AppVersion:{},WBProps:{},WBView:[],Sheets:[],CalcPr:{},xmlns:""};var pass=false,z;recordhopper(data,function hopper_wb(val,R){switch(R.n){case"BrtBundleSh":wb.Sheets.push(val);break;case"BrtBeginBook":break;case"BrtFileVersion":break;case"BrtWbProp":break;case"BrtACBegin":break;case"BrtAbsPath15":break;case"BrtACEnd":break;case"BrtWbFactoid":break;case"BrtBookProtection":break;case"BrtBeginBookViews":break;case"BrtBookView":break;case"BrtEndBookViews":break;case"BrtBeginBundleShs":break;case"BrtEndBundleShs":break;case"BrtBeginFnGroup":break;case"BrtEndFnGroup":break;case"BrtBeginExternals":break;case"BrtSupSelf":break;case"BrtSupBookSrc":break;case"BrtExternSheet":break;case"BrtEndExternals":break;case"BrtName":break;case"BrtCalcProp":break;case"BrtUserBookView":break;case"BrtBeginPivotCacheIDs":break;case"BrtBeginPivotCacheID":break;case"BrtEndPivotCacheID":break;case"BrtEndPivotCacheIDs":break;case"BrtWebOpt":break;case"BrtFileRecover":break;case"BrtFileSharing":break;case"BrtBeginSmartTagTypes":break;case"BrtSmartTagType":break;case"BrtEndSmartTagTypes":break;case"BrtFRTBegin":pass=true;break;case"BrtFRTArchID$":break;case"BrtWorkBookPr15":break;case"BrtFRTEnd":pass=false;break;case"BrtEndBook":break;default:if(!pass||opts.WTF)throw new Error("Unexpected record "+R.n)}});parse_wb_defaults(wb);return wb}function write_BUNDLESHS(ba,wb,opts){write_record(ba,"BrtBeginBundleShs");for(var idx=0;idx!=wb.SheetNames.length;++idx){var d={hsState:0,iTabID:idx+1,strRelID:"rId"+(idx+1),name:wb.SheetNames[idx]};write_record(ba,"BrtBundleSh",write_BrtBundleSh(d))}write_record(ba,"BrtEndBundleShs")}function write_BrtFileVersion(data,o){if(!o)o=new_buf(127);for(var i=0;i!=4;++i)o.write_shift(4,0);write_XLWideString("SheetJS",o);write_XLWideString(XLSX.version,o);write_XLWideString(XLSX.version,o);write_XLWideString("7262",o);o.length=o.l;return o}function write_BOOKVIEWS(ba,wb,opts){write_record(ba,"BrtBeginBookViews");write_record(ba,"BrtEndBookViews")}function write_BrtCalcProp(data,o){if(!o)o=new_buf(26);o.write_shift(4,0);o.write_shift(4,1);o.write_shift(4,0);write_Xnum(0,o);o.write_shift(-4,1023);o.write_shift(1,51);o.write_shift(1,0);return o}function write_BrtFileRecover(data,o){if(!o)o=new_buf(1);o.write_shift(1,0);return o}function write_wb_bin(wb,opts){var ba=buf_array();write_record(ba,"BrtBeginBook");write_record(ba,"BrtFileVersion",write_BrtFileVersion());write_record(ba,"BrtWbProp",write_BrtWbProp());write_BOOKVIEWS(ba,wb,opts);write_BUNDLESHS(ba,wb,opts);write_record(ba,"BrtCalcProp",write_BrtCalcProp());write_record(ba,"BrtFileRecover",write_BrtFileRecover());write_record(ba,"BrtEndBook");return ba.end()}function parse_wb(data,name,opts){return(name.substr(-4)===".bin"?parse_wb_bin:parse_wb_xml)(data,opts)}function parse_ws(data,name,opts,rels){return(name.substr(-4)===".bin"?parse_ws_bin:parse_ws_xml)(data,opts,rels)}function parse_sty(data,name,opts){return(name.substr(-4)===".bin"?parse_sty_bin:parse_sty_xml)(data,opts)}function parse_theme(data,name,opts){return parse_theme_xml(data,opts)}function parse_sst(data,name,opts){return(name.substr(-4)===".bin"?parse_sst_bin:parse_sst_xml)(data,opts)}function parse_cmnt(data,name,opts){return(name.substr(-4)===".bin"?parse_comments_bin:parse_comments_xml)(data,opts)}function parse_cc(data,name,opts){return(name.substr(-4)===".bin"?parse_cc_bin:parse_cc_xml)(data,opts)}function write_wb(wb,name,opts){return(name.substr(-4)===".bin"?write_wb_bin:write_wb_xml)(wb,opts)}function write_ws(data,name,opts,wb){return(name.substr(-4)===".bin"?write_ws_bin:write_ws_xml)(data,opts,wb)}function write_sty(data,name,opts){return(name.substr(-4)===".bin"?write_sty_bin:write_sty_xml)(data,opts)}function write_sst(data,name,opts){return(name.substr(-4)===".bin"?write_sst_bin:write_sst_xml)(data,opts)}var attregexg2=/([\w:]+)=((?:")([^"]*)(?:")|(?:')([^']*)(?:'))/g;var attregex2=/([\w:]+)=((?:")(?:[^"]*)(?:")|(?:')(?:[^']*)(?:'))/;var _chr=function(c){return String.fromCharCode(c)};function xlml_parsexmltag(tag,skip_root){var words=tag.split(/\s+/);var z=[];if(!skip_root)z[0]=words[0];if(words.length===1)return z;var m=tag.match(attregexg2),y,j,w,i;if(m)for(i=0;i!=m.length;++i){y=m[i].match(attregex2);if((j=y[1].indexOf(":"))===-1)z[y[1]]=y[2].substr(1,y[2].length-2);else{if(y[1].substr(0,6)==="xmlns:")w="xmlns"+y[1].substr(6);else w=y[1].substr(j+1);z[w]=y[2].substr(1,y[2].length-2)}}return z}function xlml_parsexmltagobj(tag){var words=tag.split(/\s+/);var z={};if(words.length===1)return z;var m=tag.match(attregexg2),y,j,w,i;if(m)for(i=0;i!=m.length;++i){y=m[i].match(attregex2);if((j=y[1].indexOf(":"))===-1)z[y[1]]=y[2].substr(1,y[2].length-2);else{if(y[1].substr(0,6)==="xmlns:")w="xmlns"+y[1].substr(6);else w=y[1].substr(j+1);z[w]=y[2].substr(1,y[2].length-2)}}return z}function xlml_format(format,value){var fmt=XLMLFormatMap[format]||unescapexml(format);if(fmt==="General")return SSF._general(value);return SSF.format(fmt,value)}function xlml_set_custprop(Custprops,Rn,cp,val){switch((cp[0].match(/dt:dt="([\w.]+)"/)||["",""])[1]){case"boolean":val=parsexmlbool(val);break;case"i2":case"int":val=parseInt(val,10);break;case"r4":case"float":val=parseFloat(val);break;case"date":case"dateTime.tz":val=new Date(val);break;case"i8":case"string":case"fixed":case"uuid":case"bin.base64":break;default:throw"bad custprop:"+cp[0]}Custprops[unescapexml(Rn[3])]=val}function safe_format_xlml(cell,nf,o){try{if(cell.t==="e"){cell.w=cell.w||BErr[cell.v]}else if(nf==="General"){if(cell.t==="n"){if((cell.v|0)===cell.v)cell.w=SSF._general_int(cell.v);else cell.w=SSF._general_num(cell.v)}else cell.w=SSF._general(cell.v)}else cell.w=xlml_format(nf||"General",cell.v);if(o.cellNF)cell.z=XLMLFormatMap[nf]||nf||"General"}catch(e){if(o.WTF)throw e}}function process_style_xlml(styles,stag,opts){if(opts.cellStyles){if(stag.Interior){var I=stag.Interior;if(I.Pattern)I.patternType=XLMLPatternTypeMap[I.Pattern]||I.Pattern}}styles[stag.ID]=stag}function parse_xlml_data(xml,ss,data,cell,base,styles,csty,row,o){var nf="General",sid=cell.StyleID,S={};o=o||{};var interiors=[];if(sid===undefined&&row)sid=row.StyleID;if(sid===undefined&&csty)sid=csty.StyleID;while(styles[sid]!==undefined){if(styles[sid].nf)nf=styles[sid].nf;if(styles[sid].Interior)interiors.push(styles[sid].Interior);if(!styles[sid].Parent)break;sid=styles[sid].Parent}switch(data.Type){case"Boolean":cell.t="b";cell.v=parsexmlbool(xml);break;case"String":cell.t="s";cell.r=xlml_fixstr(unescapexml(xml));cell.v=xml.indexOf("<")>-1?ss:cell.r;break;case"DateTime":cell.v=(Date.parse(xml)-new Date(Date.UTC(1899,11,30)))/(24*60*60*1e3);if(cell.v!==cell.v)cell.v=unescapexml(xml);else if(cell.v>=1&&cell.v<60)cell.v=cell.v-1;if(!nf||nf=="General")nf="yyyy-mm-dd";case"Number":if(cell.v===undefined)cell.v=+xml;if(!cell.t)cell.t="n";break;case"Error":cell.t="e";cell.v=RBErr[xml];cell.w=xml;break;default:cell.t="s";cell.v=xlml_fixstr(ss);break}safe_format_xlml(cell,nf,o);if(o.cellFormula!=null&&cell.Formula){cell.f=rc_to_a1(unescapexml(cell.Formula),base);cell.Formula=undefined}if(o.cellStyles){interiors.forEach(function(x){if(!S.patternType&&x.patternType)S.patternType=x.patternType});cell.s=S}cell.ixfe=cell.StyleID!==undefined?cell.StyleID:"Default"}function xlml_clean_comment(comment){comment.t=comment.v;comment.v=comment.w=comment.ixfe=undefined}function xlml_normalize(d){if(has_buf&&Buffer.isBuffer(d))return d.toString("utf8");if(typeof d==="string")return d;throw"badf"}var xlmlregex=/<(\/?)([a-z0-9]*:|)(\w+)[^>]*>/gm;function parse_xlml_xml(d,opts){var str=xlml_normalize(d);var Rn;var state=[],tmp;var sheets={},sheetnames=[],cursheet={},sheetname="";var table={},cell={},row={},dtag,didx;var c=0,r=0;var refguess={s:{r:1e6,c:1e6},e:{r:0,c:0}};var styles={},stag={};var ss="",fidx=0;var mergecells=[];var Props={},Custprops={},pidx=0,cp={};var comments=[],comment={};var cstys=[],csty;xlmlregex.lastIndex=0;while(Rn=xlmlregex.exec(str))switch(Rn[3]){case"Data":if(state[state.length-1][1])break;if(Rn[1]==="/")parse_xlml_data(str.slice(didx,Rn.index),ss,dtag,state[state.length-1][0]=="Comment"?comment:cell,{c:c,r:r},styles,cstys[c],row,opts);else{ss="";dtag=xlml_parsexmltag(Rn[0]);didx=Rn.index+Rn[0].length}break;case"Cell":if(Rn[1]==="/"){if(comments.length>0)cell.c=comments;if((!opts.sheetRows||opts.sheetRows>r)&&cell.v!==undefined)cursheet[encode_col(c)+encode_row(r)]=cell;if(cell.HRef){cell.l={Target:cell.HRef,tooltip:cell.HRefScreenTip};cell.HRef=cell.HRefScreenTip=undefined}if(cell.MergeAcross||cell.MergeDown){var cc=c+(parseInt(cell.MergeAcross,10)|0);var rr=r+(parseInt(cell.MergeDown,10)|0);mergecells.push({s:{c:c,r:r},e:{c:cc,r:rr}})}++c;if(cell.MergeAcross)c+=+cell.MergeAcross}else{cell=xlml_parsexmltagobj(Rn[0]);if(cell.Index)c=+cell.Index-1;if(c<refguess.s.c)refguess.s.c=c;if(c>refguess.e.c)refguess.e.c=c;if(Rn[0].substr(-2)==="/>")++c;comments=[]}break;case"Row":if(Rn[1]==="/"||Rn[0].substr(-2)==="/>"){if(r<refguess.s.r)refguess.s.r=r;if(r>refguess.e.r)refguess.e.r=r;if(Rn[0].substr(-2)==="/>"){row=xlml_parsexmltag(Rn[0]);if(row.Index)r=+row.Index-1}c=0;++r}else{row=xlml_parsexmltag(Rn[0]);if(row.Index)r=+row.Index-1}break;case"Worksheet":if(Rn[1]==="/"){if((tmp=state.pop())[0]!==Rn[3])throw"Bad state: "+tmp;sheetnames.push(sheetname);if(refguess.s.r<=refguess.e.r&&refguess.s.c<=refguess.e.c)cursheet["!ref"]=encode_range(refguess);if(mergecells.length)cursheet["!merges"]=mergecells;sheets[sheetname]=cursheet}else{refguess={s:{r:1e6,c:1e6},e:{r:0,c:0}};r=c=0;state.push([Rn[3],false]);tmp=xlml_parsexmltag(Rn[0]);sheetname=tmp.Name;cursheet={};mergecells=[]}break;case"Table":if(Rn[1]==="/"){if((tmp=state.pop())[0]!==Rn[3])throw"Bad state: "+tmp}else if(Rn[0].slice(-2)=="/>")break;else{table=xlml_parsexmltag(Rn[0]);state.push([Rn[3],false]);cstys=[]}break;case"Style":if(Rn[1]==="/")process_style_xlml(styles,stag,opts);else stag=xlml_parsexmltag(Rn[0]);break;case"NumberFormat":stag.nf=xlml_parsexmltag(Rn[0]).Format||"General";break;case"Column":if(state[state.length-1][0]!=="Table")break;csty=xlml_parsexmltag(Rn[0]);cstys[csty.Index-1||cstys.length]=csty;for(var i=0;i<+csty.Span;++i)cstys[cstys.length]=csty;break;case"NamedRange":break;case"NamedCell":break;case"B":break;case"I":break;case"U":break;case"S":break;case"Sub":break;case"Sup":break;case"Span":break;case"Border":break;case"Alignment":break;case"Borders":break;case"Font":if(Rn[0].substr(-2)==="/>")break;else if(Rn[1]==="/")ss+=str.slice(fidx,Rn.index);else fidx=Rn.index+Rn[0].length;break;case"Interior":if(!opts.cellStyles)break;stag.Interior=xlml_parsexmltag(Rn[0]);break;case"Protection":break;case"Author":case"Title":case"Description":case"Created":case"Keywords":case"Subject":case"Category":case"Company":case"LastAuthor":case"LastSaved":case"LastPrinted":case"Version":case"Revision":case"TotalTime":case"HyperlinkBase":case"Manager":if(Rn[0].substr(-2)==="/>")break;else if(Rn[1]==="/")xlml_set_prop(Props,Rn[3],str.slice(pidx,Rn.index));else pidx=Rn.index+Rn[0].length;break;case"Paragraphs":break;case"Styles":case"Workbook":if(Rn[1]==="/"){if((tmp=state.pop())[0]!==Rn[3])throw"Bad state: "+tmp}else state.push([Rn[3],false]);break;case"Comment":if(Rn[1]==="/"){if((tmp=state.pop())[0]!==Rn[3])throw"Bad state: "+tmp;xlml_clean_comment(comment);comments.push(comment)}else{state.push([Rn[3],false]);tmp=xlml_parsexmltag(Rn[0]);comment={a:tmp.Author}}break;case"Name":break;case"ComponentOptions":case"DocumentProperties":case"CustomDocumentProperties":case"OfficeDocumentSettings":case"PivotTable":case"PivotCache":case"Names":case"MapInfo":case"PageBreaks":case"QueryTable":case"DataValidation":case"AutoFilter":case"Sorting":case"Schema":case"data":case"ConditionalFormatting":case"SmartTagType":case"SmartTags":case"ExcelWorkbook":case"WorkbookOptions":case"WorksheetOptions":if(Rn[1]==="/"){if((tmp=state.pop())[0]!==Rn[3])throw"Bad state: "+tmp}else if(Rn[0].charAt(Rn[0].length-2)!=="/")state.push([Rn[3],true]);break;default:var seen=true;switch(state[state.length-1][0]){case"OfficeDocumentSettings":switch(Rn[3]){case"AllowPNG":break;case"RemovePersonalInformation":break;case"DownloadComponents":break;case"LocationOfComponents":break;case"Colors":break;case"Color":break;case"Index":break;case"RGB":break;case"PixelsPerInch":break;case"TargetScreenSize":break;case"ReadOnlyRecommended":break;default:seen=false}break;case"ComponentOptions":switch(Rn[3]){case"Toolbar":break;case"HideOfficeLogo":break;case"SpreadsheetAutoFit":break;case"Label":break;case"Caption":break;case"MaxHeight":break;case"MaxWidth":break;case"NextSheetNumber":break;default:seen=false}break;case"ExcelWorkbook":switch(Rn[3]){case"WindowHeight":break;case"WindowWidth":break;case"WindowTopX":break;case"WindowTopY":break;case"TabRatio":break;case"ProtectStructure":break;case"ProtectWindows":break;case"ActiveSheet":break;case"DisplayInkNotes":break;case"FirstVisibleSheet":break;case"SupBook":break;case"SheetName":break;
 case"SheetIndex":break;case"SheetIndexFirst":break;case"SheetIndexLast":break;case"Dll":break;case"AcceptLabelsInFormulas":break;case"DoNotSaveLinkValues":break;case"Date1904":break;case"Iteration":break;case"MaxIterations":break;case"MaxChange":break;case"Path":break;case"Xct":break;case"Count":break;case"SelectedSheets":break;case"Calculation":break;case"Uncalced":break;case"StartupPrompt":break;case"Crn":break;case"ExternName":break;case"Formula":break;case"ColFirst":break;case"ColLast":break;case"WantAdvise":break;case"Boolean":break;case"Error":break;case"Text":break;case"OLE":break;case"NoAutoRecover":break;case"PublishObjects":break;case"DoNotCalculateBeforeSave":break;case"Number":break;case"RefModeR1C1":break;case"EmbedSaveSmartTags":break;default:seen=false}break;case"WorkbookOptions":switch(Rn[3]){case"OWCVersion":break;case"Height":break;case"Width":break;default:seen=false}break;case"WorksheetOptions":switch(Rn[3]){case"Unsynced":break;case"Visible":break;case"Print":break;case"Panes":break;case"Scale":break;case"Pane":break;case"Number":break;case"Layout":break;case"Header":break;case"Footer":break;case"PageSetup":break;case"PageMargins":break;case"Selected":break;case"ProtectObjects":break;case"EnableSelection":break;case"ProtectScenarios":break;case"ValidPrinterInfo":break;case"HorizontalResolution":break;case"VerticalResolution":break;case"NumberofCopies":break;case"ActiveRow":break;case"ActiveCol":break;case"ActivePane":break;case"TopRowVisible":break;case"TopRowBottomPane":break;case"LeftColumnVisible":break;case"LeftColumnRightPane":break;case"FitToPage":break;case"RangeSelection":break;case"PaperSizeIndex":break;case"PageLayoutZoom":break;case"PageBreakZoom":break;case"FilterOn":break;case"DoNotDisplayGridlines":break;case"SplitHorizontal":break;case"SplitVertical":break;case"FreezePanes":break;case"FrozenNoSplit":break;case"FitWidth":break;case"FitHeight":break;case"CommentsLayout":break;case"Zoom":break;case"LeftToRight":break;case"Gridlines":break;case"AllowSort":break;case"AllowFilter":break;case"AllowInsertRows":break;case"AllowDeleteRows":break;case"AllowInsertCols":break;case"AllowDeleteCols":break;case"AllowInsertHyperlinks":break;case"AllowFormatCells":break;case"AllowSizeCols":break;case"AllowSizeRows":break;case"NoSummaryRowsBelowDetail":break;case"TabColorIndex":break;case"DoNotDisplayHeadings":break;case"ShowPageLayoutZoom":break;case"NoSummaryColumnsRightDetail":break;case"BlackAndWhite":break;case"DoNotDisplayZeros":break;case"DisplayPageBreak":break;case"RowColHeadings":break;case"DoNotDisplayOutline":break;case"NoOrientation":break;case"AllowUsePivotTables":break;case"ZeroHeight":break;case"ViewableRange":break;case"Selection":break;case"ProtectContents":break;default:seen=false}break;case"PivotTable":case"PivotCache":switch(Rn[3]){case"ImmediateItemsOnDrop":break;case"ShowPageMultipleItemLabel":break;case"CompactRowIndent":break;case"Location":break;case"PivotField":break;case"Orientation":break;case"LayoutForm":break;case"LayoutSubtotalLocation":break;case"LayoutCompactRow":break;case"Position":break;case"PivotItem":break;case"DataType":break;case"DataField":break;case"SourceName":break;case"ParentField":break;case"PTLineItems":break;case"PTLineItem":break;case"CountOfSameItems":break;case"Item":break;case"ItemType":break;case"PTSource":break;case"CacheIndex":break;case"ConsolidationReference":break;case"FileName":break;case"Reference":break;case"NoColumnGrand":break;case"NoRowGrand":break;case"BlankLineAfterItems":break;case"Hidden":break;case"Subtotal":break;case"BaseField":break;case"MapChildItems":break;case"Function":break;case"RefreshOnFileOpen":break;case"PrintSetTitles":break;case"MergeLabels":break;case"DefaultVersion":break;case"RefreshName":break;case"RefreshDate":break;case"RefreshDateCopy":break;case"VersionLastRefresh":break;case"VersionLastUpdate":break;case"VersionUpdateableMin":break;case"VersionRefreshableMin":break;case"Calculation":break;default:seen=false}break;case"PageBreaks":switch(Rn[3]){case"ColBreaks":break;case"ColBreak":break;case"RowBreaks":break;case"RowBreak":break;case"ColStart":break;case"ColEnd":break;case"RowEnd":break;default:seen=false}break;case"AutoFilter":switch(Rn[3]){case"AutoFilterColumn":break;case"AutoFilterCondition":break;case"AutoFilterAnd":break;case"AutoFilterOr":break;default:seen=false}break;case"QueryTable":switch(Rn[3]){case"Id":break;case"AutoFormatFont":break;case"AutoFormatPattern":break;case"QuerySource":break;case"QueryType":break;case"EnableRedirections":break;case"RefreshedInXl9":break;case"URLString":break;case"HTMLTables":break;case"Connection":break;case"CommandText":break;case"RefreshInfo":break;case"NoTitles":break;case"NextId":break;case"ColumnInfo":break;case"OverwriteCells":break;case"DoNotPromptForFile":break;case"TextWizardSettings":break;case"Source":break;case"Number":break;case"Decimal":break;case"ThousandSeparator":break;case"TrailingMinusNumbers":break;case"FormatSettings":break;case"FieldType":break;case"Delimiters":break;case"Tab":break;case"Comma":break;case"AutoFormatName":break;case"VersionLastEdit":break;case"VersionLastRefresh":break;default:seen=false}break;case"Sorting":case"ConditionalFormatting":case"DataValidation":switch(Rn[3]){case"Range":break;case"Type":break;case"Min":break;case"Max":break;case"Sort":break;case"Descending":break;case"Order":break;case"CaseSensitive":break;case"Value":break;case"ErrorStyle":break;case"ErrorMessage":break;case"ErrorTitle":break;case"CellRangeList":break;case"InputMessage":break;case"InputTitle":break;case"ComboHide":break;case"InputHide":break;case"Condition":break;case"Qualifier":break;case"UseBlank":break;case"Value1":break;case"Value2":break;case"Format":break;default:seen=false}break;case"MapInfo":case"Schema":case"data":switch(Rn[3]){case"Map":break;case"Entry":break;case"Range":break;case"XPath":break;case"Field":break;case"XSDType":break;case"FilterOn":break;case"Aggregate":break;case"ElementType":break;case"AttributeType":break;case"schema":case"element":case"complexType":case"datatype":case"all":case"attribute":case"extends":break;case"row":break;default:seen=false}break;case"SmartTags":break;default:seen=false;break}if(seen)break;if(!state[state.length-1][1])throw"Unrecognized tag: "+Rn[3]+"|"+state.join("|");if(state[state.length-1][0]==="CustomDocumentProperties"){if(Rn[0].substr(-2)==="/>")break;else if(Rn[1]==="/")xlml_set_custprop(Custprops,Rn,cp,str.slice(pidx,Rn.index));else{cp=Rn;pidx=Rn.index+Rn[0].length}break}if(opts.WTF)throw"Unrecognized tag: "+Rn[3]+"|"+state.join("|")}var out={};if(!opts.bookSheets&&!opts.bookProps)out.Sheets=sheets;out.SheetNames=sheetnames;out.SSF=SSF.get_table();out.Props=Props;out.Custprops=Custprops;return out}function parse_xlml(data,opts){fix_read_opts(opts=opts||{});switch(opts.type||"base64"){case"base64":return parse_xlml_xml(Base64.decode(data),opts);case"binary":case"buffer":case"file":return parse_xlml_xml(data,opts);case"array":return parse_xlml_xml(data.map(_chr).join(""),opts)}}function write_xlml(wb,opts){}function parse_compobj(obj){var v={};var o=obj.content;var l=28,m;m=__lpstr(o,l);l+=4+__readUInt32LE(o,l);v.UserType=m;m=__readUInt32LE(o,l);l+=4;switch(m){case 0:break;case 4294967295:case 4294967294:l+=4;break;default:if(m>400)throw new Error("Unsupported Clipboard: "+m.toString(16));l+=m}m=__lpstr(o,l);l+=m.length===0?0:5+m.length;v.Reserved1=m;if((m=__readUInt32LE(o,l))!==1907550708)return v;throw"Unsupported Unicode Extension"}function slurp(R,blob,length,opts){var l=length;var bufs=[];var d=blob.slice(blob.l,blob.l+l);if(opts&&opts.enc&&opts.enc.insitu_decrypt)switch(R.n){case"BOF":case"FilePass":case"FileLock":case"InterfaceHdr":case"RRDInfo":case"RRDHead":case"UsrExcl":break;default:if(d.length===0)break;opts.enc.insitu_decrypt(d)}bufs.push(d);blob.l+=l;var next=XLSRecordEnum[__readUInt16LE(blob,blob.l)];while(next!=null&&next.n==="Continue"){l=__readUInt16LE(blob,blob.l+2);bufs.push(blob.slice(blob.l+4,blob.l+4+l));blob.l+=4+l;next=XLSRecordEnum[__readUInt16LE(blob,blob.l)]}var b=bconcat(bufs);prep_blob(b,0);var ll=0;b.lens=[];for(var j=0;j<bufs.length;++j){b.lens.push(ll);ll+=bufs[j].length}return R.f(b,b.length,opts)}function safe_format_xf(p,opts,date1904){if(!p.XF)return;try{var fmtid=p.XF.ifmt||0;if(p.t==="e"){p.w=p.w||BErr[p.v]}else if(fmtid===0){if(p.t==="n"){if((p.v|0)===p.v)p.w=SSF._general_int(p.v);else p.w=SSF._general_num(p.v)}else p.w=SSF._general(p.v)}else p.w=SSF.format(fmtid,p.v,{date1904:date1904||false});if(opts.cellNF)p.z=SSF._table[fmtid]}catch(e){if(opts.WTF)throw e}}function make_cell(val,ixfe,t){return{v:val,ixfe:ixfe,t:t}}function parse_workbook(blob,options){var wb={opts:{}};var Sheets={};var out={};var Directory={};var found_sheet=false;var range={};var last_formula=null;var sst=[];var cur_sheet="";var Preamble={};var lastcell,last_cell,cc,cmnt,rng,rngC,rngR;var shared_formulae={};var array_formulae=[];var temp_val;var country;var cell_valid=true;var XFs=[];var palette=[];var get_rgb=function getrgb(icv){if(icv<8)return XLSIcv[icv];if(icv<64)return palette[icv-8]||XLSIcv[icv];return XLSIcv[icv]};var process_cell_style=function pcs(cell,line){var xfd=line.XF.data;if(!xfd||!xfd.patternType)return;line.s={};line.s.patternType=xfd.patternType;var t;if(t=rgb2Hex(get_rgb(xfd.icvFore))){line.s.fgColor={rgb:t}}if(t=rgb2Hex(get_rgb(xfd.icvBack))){line.s.bgColor={rgb:t}}};var addcell=function addcell(cell,line,options){if(!cell_valid)return;if(options.cellStyles&&line.XF&&line.XF.data)process_cell_style(cell,line);lastcell=cell;last_cell=encode_cell(cell);if(range.s){if(cell.r<range.s.r)range.s.r=cell.r;if(cell.c<range.s.c)range.s.c=cell.c}if(range.e){if(cell.r+1>range.e.r)range.e.r=cell.r+1;if(cell.c+1>range.e.c)range.e.c=cell.c+1}if(options.sheetRows&&lastcell.r>=options.sheetRows)cell_valid=false;else out[last_cell]=line};var opts={enc:false,sbcch:0,snames:[],sharedf:shared_formulae,arrayf:array_formulae,rrtabid:[],lastuser:"",biff:8,codepage:0,winlocked:0,wtf:false};if(options.password)opts.password=options.password;var mergecells=[];var objects=[];var supbooks=[[]];var sbc=0,sbci=0,sbcli=0;supbooks.SheetNames=opts.snames;supbooks.sharedf=opts.sharedf;supbooks.arrayf=opts.arrayf;var last_Rn="";var file_depth=0;opts.codepage=1200;set_cp(1200);while(blob.l<blob.length-1){var s=blob.l;var RecordType=blob.read_shift(2);if(RecordType===0&&last_Rn==="EOF")break;var length=blob.l===blob.length?0:blob.read_shift(2),y;var R=XLSRecordEnum[RecordType];if(R&&R.f){if(options.bookSheets){if(last_Rn==="BoundSheet8"&&R.n!=="BoundSheet8")break}last_Rn=R.n;if(R.r===2||R.r==12){var rt=blob.read_shift(2);length-=2;if(!opts.enc&&rt!==RecordType)throw"rt mismatch";if(R.r==12){blob.l+=10;length-=10}}var val;if(R.n==="EOF")val=R.f(blob,length,opts);else val=slurp(R,blob,length,opts);var Rn=R.n;if(opts.biff===5||opts.biff===2)switch(Rn){case"Lbl":Rn="Label";break}switch(Rn){case"Date1904":wb.opts.Date1904=val;break;case"WriteProtect":wb.opts.WriteProtect=true;break;case"FilePass":if(!opts.enc)blob.l=0;opts.enc=val;if(opts.WTF)console.error(val);if(!options.password)throw new Error("File is password-protected");if(val.Type!==0)throw new Error("Encryption scheme unsupported");if(!val.valid)throw new Error("Password is incorrect");break;case"WriteAccess":opts.lastuser=val;break;case"FileSharing":break;case"CodePage":if(val===21010)val=1200;else if(val===32769)val=1252;opts.codepage=val;set_cp(val);break;case"RRTabId":opts.rrtabid=val;break;case"WinProtect":opts.winlocked=val;break;case"Template":break;case"RefreshAll":wb.opts.RefreshAll=val;break;case"BookBool":break;case"UsesELFs":break;case"MTRSettings":{if(val[0]&&val[1])throw"Unsupported threads: "+val}break;case"CalcCount":wb.opts.CalcCount=val;break;case"CalcDelta":wb.opts.CalcDelta=val;break;case"CalcIter":wb.opts.CalcIter=val;break;case"CalcMode":wb.opts.CalcMode=val;break;case"CalcPrecision":wb.opts.CalcPrecision=val;break;case"CalcSaveRecalc":wb.opts.CalcSaveRecalc=val;break;case"CalcRefMode":opts.CalcRefMode=val;break;case"Uncalced":break;case"ForceFullCalculation":wb.opts.FullCalc=val;break;case"WsBool":break;case"XF":XFs.push(val);break;case"ExtSST":break;case"BookExt":break;case"RichTextStream":break;case"BkHim":break;case"SupBook":supbooks[++sbc]=[val];sbci=0;break;case"ExternName":supbooks[sbc][++sbci]=val;break;case"Index":break;case"Lbl":supbooks[0][++sbcli]=val;break;case"ExternSheet":supbooks[sbc]=supbooks[sbc].concat(val);sbci+=val.length;break;case"Protect":out["!protect"]=val;break;case"Password":if(val!==0&&opts.WTF)console.error("Password verifier: "+val);break;case"Prot4Rev":case"Prot4RevPass":break;case"BoundSheet8":{Directory[val.pos]=val;opts.snames.push(val.name)}break;case"EOF":{if(--file_depth)break;if(range.e){out["!range"]=range;if(range.e.r>0&&range.e.c>0){range.e.r--;range.e.c--;out["!ref"]=encode_range(range);range.e.r++;range.e.c++}if(mergecells.length>0)out["!merges"]=mergecells;if(objects.length>0)out["!objects"]=objects}if(cur_sheet==="")Preamble=out;else Sheets[cur_sheet]=out;out={}}break;case"BOF":{if(opts.biff!==8);else if(val.BIFFVer===1280)opts.biff=5;else if(val.BIFFVer===2)opts.biff=2;else if(val.BIFFVer===7)opts.biff=2;if(file_depth++)break;cell_valid=true;out={};if(opts.biff===2){if(cur_sheet==="")cur_sheet="Sheet1";range={s:{r:0,c:0},e:{r:0,c:0}}}else cur_sheet=(Directory[s]||{name:""}).name;mergecells=[];objects=[]}break;case"Number":case"BIFF2NUM":{temp_val={ixfe:val.ixfe,XF:XFs[val.ixfe],v:val.val,t:"n"};if(temp_val.XF)safe_format_xf(temp_val,options,wb.opts.Date1904);addcell({c:val.c,r:val.r},temp_val,options)}break;case"BoolErr":{temp_val={ixfe:val.ixfe,XF:XFs[val.ixfe],v:val.val,t:val.t};if(temp_val.XF)safe_format_xf(temp_val,options,wb.opts.Date1904);addcell({c:val.c,r:val.r},temp_val,options)}break;case"RK":{temp_val={ixfe:val.ixfe,XF:XFs[val.ixfe],v:val.rknum,t:"n"};if(temp_val.XF)safe_format_xf(temp_val,options,wb.opts.Date1904);addcell({c:val.c,r:val.r},temp_val,options)}break;case"MulRk":{for(var j=val.c;j<=val.C;++j){var ixfe=val.rkrec[j-val.c][0];temp_val={ixfe:ixfe,XF:XFs[ixfe],v:val.rkrec[j-val.c][1],t:"n"};if(temp_val.XF)safe_format_xf(temp_val,options,wb.opts.Date1904);addcell({c:j,r:val.r},temp_val,options)}}break;case"Formula":{switch(val.val){case"String":last_formula=val;break;case"Array Formula":throw"Array Formula unsupported";default:temp_val={v:val.val,ixfe:val.cell.ixfe,t:val.tt};temp_val.XF=XFs[temp_val.ixfe];if(options.cellFormula)temp_val.f="="+stringify_formula(val.formula,range,val.cell,supbooks,opts);if(temp_val.XF)safe_format_xf(temp_val,options,wb.opts.Date1904);addcell(val.cell,temp_val,options);last_formula=val}}break;case"String":{if(last_formula){last_formula.val=val;temp_val={v:last_formula.val,ixfe:last_formula.cell.ixfe,t:"s"};temp_val.XF=XFs[temp_val.ixfe];if(options.cellFormula)temp_val.f="="+stringify_formula(last_formula.formula,range,last_formula.cell,supbooks,opts);if(temp_val.XF)safe_format_xf(temp_val,options,wb.opts.Date1904);addcell(last_formula.cell,temp_val,options);last_formula=null}}break;case"Array":{array_formulae.push(val)}break;case"ShrFmla":{if(!cell_valid)break;shared_formulae[encode_cell(last_formula.cell)]=val[0]}break;case"LabelSst":temp_val=make_cell(sst[val.isst].t,val.ixfe,"s");temp_val.XF=XFs[temp_val.ixfe];if(temp_val.XF)safe_format_xf(temp_val,options,wb.opts.Date1904);addcell({c:val.c,r:val.r},temp_val,options);break;case"Label":case"BIFF2STR":temp_val=make_cell(val.val,val.ixfe,"s");temp_val.XF=XFs[temp_val.ixfe];if(temp_val.XF)safe_format_xf(temp_val,options,wb.opts.Date1904);addcell({c:val.c,r:val.r},temp_val,options);break;case"Dimensions":{if(file_depth===1)range=val}break;case"SST":{sst=val}break;case"Format":{SSF.load(val[1],val[0])}break;case"MergeCells":mergecells=mergecells.concat(val);break;case"Obj":objects[val.cmo[0]]=opts.lastobj=val;break;case"TxO":opts.lastobj.TxO=val;break;case"HLink":{for(rngR=val[0].s.r;rngR<=val[0].e.r;++rngR)for(rngC=val[0].s.c;rngC<=val[0].e.c;++rngC)if(out[encode_cell({c:rngC,r:rngR})])out[encode_cell({c:rngC,r:rngR})].l=val[1]}break;case"HLinkTooltip":{for(rngR=val[0].s.r;rngR<=val[0].e.r;++rngR)for(rngC=val[0].s.c;rngC<=val[0].e.c;++rngC)if(out[encode_cell({c:rngC,r:rngR})])out[encode_cell({c:rngC,r:rngR})].l.tooltip=val[1]}break;case"Note":{if(opts.biff<=5&&opts.biff>=2)break;cc=out[encode_cell(val[0])];var noteobj=objects[val[2]];if(!cc)break;if(!cc.c)cc.c=[];cmnt={a:val[1],t:noteobj.TxO.t};cc.c.push(cmnt)}break;default:switch(R.n){case"ClrtClient":break;case"XFExt":update_xfext(XFs[val.ixfe],val.ext);break;case"NameCmt":break;case"Header":break;case"Footer":break;case"HCenter":break;case"VCenter":break;case"Pls":break;case"Setup":break;case"DefColWidth":break;case"GCW":break;case"LHRecord":break;case"ColInfo":break;case"Row":break;case"DBCell":break;case"MulBlank":break;case"EntExU2":break;case"SxView":break;case"Sxvd":break;case"SXVI":break;case"SXVDEx":break;case"SxIvd":break;case"SXDI":break;case"SXLI":break;case"SXEx":break;case"QsiSXTag":break;case"Selection":break;case"Feat":break;case"FeatHdr":case"FeatHdr11":break;case"Feature11":case"Feature12":case"List12":break;case"Blank":break;case"Country":country=val;break;case"RecalcId":break;case"DefaultRowHeight":case"DxGCol":break;case"Fbi":case"Fbi2":case"GelFrame":break;case"Font":break;case"XFCRC":break;case"Style":break;case"StyleExt":break;case"Palette":palette=val;break;case"Theme":break;case"ScenarioProtect":break;case"ObjProtect":break;case"CondFmt12":break;case"Table":break;case"TableStyles":break;case"TableStyle":break;case"TableStyleElement":break;case"SXStreamID":break;case"SXVS":break;case"DConRef":break;case"SXAddl":break;case"DConBin":break;case"DConName":break;case"SXPI":break;case"SxFormat":break;case"SxSelect":break;case"SxRule":break;case"SxFilt":break;case"SxItm":break;case"SxDXF":break;case"ScenMan":break;case"DCon":break;case"CellWatch":break;case"PrintRowCol":break;case"PrintGrid":break;case"PrintSize":break;case"XCT":break;case"CRN":break;case"Scl":{}break;case"SheetExt":{}break;case"SheetExtOptional":{}break;case"ObNoMacros":{}break;case"ObProj":{}break;case"CodeName":{}break;case"GUIDTypeLib":{}break;case"WOpt":break;case"PhoneticInfo":break;case"OleObjectSize":break;case"DXF":case"DXFN":case"DXFN12":case"DXFN12List":case"DXFN12NoCB":break;case"Dv":case"DVal":break;case"BRAI":case"Series":case"SeriesText":break;case"DConn":break;case"DbOrParamQry":break;case"DBQueryExt":break;case"IFmtRecord":break;case"CondFmt":case"CF":case"CF12":case"CFEx":break;case"Excel9File":break;case"Units":break;case"InterfaceHdr":case"Mms":case"InterfaceEnd":case"DSF":case"BuiltInFnGroupCount":case"Window1":case"Window2":case"HideObj":case"GridSet":case"Guts":case"UserBView":case"UserSViewBegin":case"UserSViewEnd":case"Pane":break;default:switch(R.n){case"Dat":case"Begin":case"End":case"StartBlock":case"EndBlock":case"Frame":case"Area":case"Axis":case"AxisLine":case"Tick":break;case"AxesUsed":case"CrtLayout12":case"CrtLayout12A":case"CrtLink":case"CrtLine":case"CrtMlFrt":case"CrtMlFrtContinue":break;case"LineFormat":case"AreaFormat":case"Chart":case"Chart3d":case"Chart3DBarShape":case"ChartFormat":case"ChartFrtInfo":break;case"PlotArea":case"PlotGrowth":break;case"SeriesList":case"SerParent":case"SerAuxTrend":break;case"DataFormat":case"SerToCrt":case"FontX":break;case"CatSerRange":case"AxcExt":case"SerFmt":break;case"ShtProps":break;case"DefaultText":case"Text":case"CatLab":break;case"DataLabExtContents":break;case"Legend":case"LegendException":break;case"Pie":case"Scatter":break;case"PieFormat":case"MarkerFormat":break;case"StartObject":case"EndObject":break;case"AlRuns":case"ObjectLink":break;case"SIIndex":break;case"AttachedLabel":case"YMult":break;case"Line":case"Bar":break;case"Surf":break;case"AxisParent":break;case"Pos":break;case"ValueRange":break;case"SXViewEx9":break;case"SXViewLink":break;case"PivotChartBits":break;case"SBaseRef":break;case"TextPropsStream":break;case"LnExt":break;case"MkrExt":break;case"CrtCoopt":break;case"Qsi":case"Qsif":case"Qsir":case"QsiSXTag":break;case"TxtQry":break;case"FilterMode":break;case"AutoFilter":case"AutoFilterInfo":break;case"AutoFilter12":break;case"DropDownObjIds":break;case"Sort":break;case"SortData":break;case"ShapePropsStream":break;case"MsoDrawing":case"MsoDrawingGroup":case"MsoDrawingSelection":break;case"ImData":break;case"WebPub":case"AutoWebPub":case"RightMargin":case"LeftMargin":case"TopMargin":case"BottomMargin":case"HeaderFooter":case"HFPicture":case"PLV":case"HorizontalPageBreaks":case"VerticalPageBreaks":case"Backup":case"CompressPictures":case"Compat12":break;case"Continue":case"ContinueFrt12":break;case"FrtFontList":case"FrtWrapper":break;case"ExternCount":break;case"RString":break;case"TabIdConf":case"Radar":case"RadarArea":case"DropBar":case"Intl":case"CoordList":case"SerAuxErrBar":break;default:switch(R.n){case"SCENARIO":case"DConBin":case"PicF":case"DataLabExt":case"Lel":case"BopPop":case"BopPopCustom":case"RealTimeData":case"Name":break;default:if(options.WTF)throw"Unrecognized Record "+R.n}}}}}else blob.l+=length}var sheetnamesraw=opts.biff===2?["Sheet1"]:Object.keys(Directory).sort(function(a,b){return Number(a)-Number(b)}).map(function(x){return Directory[x].name});var sheetnames=sheetnamesraw.slice();wb.Directory=sheetnamesraw;wb.SheetNames=sheetnamesraw;if(!options.bookSheets)wb.Sheets=Sheets;wb.Preamble=Preamble;wb.Strings=sst;wb.SSF=SSF.get_table();if(opts.enc)wb.Encryption=opts.enc;wb.Metadata={};if(country!==undefined)wb.Metadata.Country=country;return wb}function parse_xlscfb(cfb,options){if(!options)options={};fix_read_opts(options);reset_cp();var CompObj,Summary,Workbook;if(cfb.find){CompObj=cfb.find("!CompObj");Summary=cfb.find("!SummaryInformation");Workbook=cfb.find("/Workbook")}else{prep_blob(cfb,0);Workbook={content:cfb}}if(!Workbook)Workbook=cfb.find("/Book");var CompObjP,SummaryP,WorkbookP;if(CompObj)CompObjP=parse_compobj(CompObj);if(options.bookProps&&!options.bookSheets)WorkbookP={};else{if(Workbook)WorkbookP=parse_workbook(Workbook.content,options,!!Workbook.find);else throw new Error("Cannot find Workbook stream")}if(cfb.find)parse_props(cfb);var props={};for(var y in cfb.Summary)props[y]=cfb.Summary[y];for(y in cfb.DocSummary)props[y]=cfb.DocSummary[y];WorkbookP.Props=WorkbookP.Custprops=props;if(options.bookFiles)WorkbookP.cfb=cfb;WorkbookP.CompObjP=CompObjP;return WorkbookP}function parse_props(cfb){var DSI=cfb.find("!DocumentSummaryInformation");if(DSI)try{cfb.DocSummary=parse_PropertySetStream(DSI,DocSummaryPIDDSI)}catch(e){}var SI=cfb.find("!SummaryInformation");if(SI)try{cfb.Summary=parse_PropertySetStream(SI,SummaryPIDSI)}catch(e){}}var XLSBRecordEnum={0:{n:"BrtRowHdr",f:parse_BrtRowHdr},1:{n:"BrtCellBlank",f:parse_BrtCellBlank},2:{n:"BrtCellRk",f:parse_BrtCellRk},3:{n:"BrtCellError",f:parse_BrtCellError},4:{n:"BrtCellBool",f:parse_BrtCellBool},5:{n:"BrtCellReal",f:parse_BrtCellReal},6:{n:"BrtCellSt",f:parse_BrtCellSt},7:{n:"BrtCellIsst",f:parse_BrtCellIsst},8:{n:"BrtFmlaString",f:parse_BrtFmlaString},9:{n:"BrtFmlaNum",f:parse_BrtFmlaNum},10:{n:"BrtFmlaBool",f:parse_BrtFmlaBool},11:{n:"BrtFmlaError",f:parse_BrtFmlaError},16:{n:"BrtFRTArchID$",f:parse_BrtFRTArchID$},19:{n:"BrtSSTItem",f:parse_RichStr},20:{n:"BrtPCDIMissing",f:parsenoop},21:{n:"BrtPCDINumber",f:parsenoop},22:{n:"BrtPCDIBoolean",f:parsenoop},23:{n:"BrtPCDIError",f:parsenoop},24:{n:"BrtPCDIString",f:parsenoop},25:{n:"BrtPCDIDatetime",f:parsenoop},26:{n:"BrtPCDIIndex",f:parsenoop},27:{n:"BrtPCDIAMissing",f:parsenoop},28:{n:"BrtPCDIANumber",f:parsenoop},29:{n:"BrtPCDIABoolean",f:parsenoop},30:{n:"BrtPCDIAError",f:parsenoop},31:{n:"BrtPCDIAString",f:parsenoop},32:{n:"BrtPCDIADatetime",f:parsenoop},33:{n:"BrtPCRRecord",f:parsenoop},34:{n:"BrtPCRRecordDt",f:parsenoop},35:{n:"BrtFRTBegin",f:parsenoop},36:{n:"BrtFRTEnd",f:parsenoop},37:{n:"BrtACBegin",f:parsenoop},38:{n:"BrtACEnd",f:parsenoop},39:{n:"BrtName",f:parsenoop},40:{n:"BrtIndexRowBlock",f:parsenoop},42:{n:"BrtIndexBlock",f:parsenoop},43:{n:"BrtFont",f:parse_BrtFont},44:{n:"BrtFmt",f:parse_BrtFmt},45:{n:"BrtFill",f:parsenoop},46:{n:"BrtBorder",f:parsenoop},47:{n:"BrtXF",f:parse_BrtXF},48:{n:"BrtStyle",f:parsenoop},49:{n:"BrtCellMeta",f:parsenoop},50:{n:"BrtValueMeta",f:parsenoop},51:{n:"BrtMdb",f:parsenoop},52:{n:"BrtBeginFmd",f:parsenoop},53:{n:"BrtEndFmd",f:parsenoop},54:{n:"BrtBeginMdx",f:parsenoop},55:{n:"BrtEndMdx",f:parsenoop},56:{n:"BrtBeginMdxTuple",f:parsenoop},57:{n:"BrtEndMdxTuple",f:parsenoop},58:{n:"BrtMdxMbrIstr",f:parsenoop},59:{n:"BrtStr",f:parsenoop},60:{n:"BrtColInfo",f:parsenoop},62:{n:"BrtCellRString",f:parsenoop},63:{n:"BrtCalcChainItem$",f:parse_BrtCalcChainItem$},64:{n:"BrtDVal",f:parsenoop},65:{n:"BrtSxvcellNum",f:parsenoop},66:{n:"BrtSxvcellStr",f:parsenoop},67:{n:"BrtSxvcellBool",f:parsenoop},68:{n:"BrtSxvcellErr",f:parsenoop},69:{n:"BrtSxvcellDate",f:parsenoop},70:{n:"BrtSxvcellNil",f:parsenoop},128:{n:"BrtFileVersion",f:parsenoop},129:{n:"BrtBeginSheet",f:parsenoop},130:{n:"BrtEndSheet",f:parsenoop},131:{n:"BrtBeginBook",f:parsenoop,p:0},132:{n:"BrtEndBook",f:parsenoop},133:{n:"BrtBeginWsViews",f:parsenoop},134:{n:"BrtEndWsViews",f:parsenoop},135:{n:"BrtBeginBookViews",f:parsenoop},136:{n:"BrtEndBookViews",f:parsenoop},137:{n:"BrtBeginWsView",f:parsenoop},138:{n:"BrtEndWsView",f:parsenoop},139:{n:"BrtBeginCsViews",f:parsenoop},140:{n:"BrtEndCsViews",f:parsenoop},141:{n:"BrtBeginCsView",f:parsenoop},142:{n:"BrtEndCsView",f:parsenoop},143:{n:"BrtBeginBundleShs",f:parsenoop},144:{n:"BrtEndBundleShs",f:parsenoop},145:{n:"BrtBeginSheetData",f:parsenoop},146:{n:"BrtEndSheetData",f:parsenoop},147:{n:"BrtWsProp",f:parse_BrtWsProp},148:{n:"BrtWsDim",f:parse_BrtWsDim,p:16},151:{n:"BrtPane",f:parsenoop},152:{n:"BrtSel",f:parsenoop},153:{n:"BrtWbProp",f:parse_BrtWbProp},154:{n:"BrtWbFactoid",f:parsenoop},155:{n:"BrtFileRecover",f:parsenoop},156:{n:"BrtBundleSh",f:parse_BrtBundleSh},157:{n:"BrtCalcProp",f:parsenoop},158:{n:"BrtBookView",f:parsenoop},159:{n:"BrtBeginSst",f:parse_BrtBeginSst},160:{n:"BrtEndSst",f:parsenoop},161:{n:"BrtBeginAFilter",f:parsenoop},162:{n:"BrtEndAFilter",f:parsenoop},163:{n:"BrtBeginFilterColumn",f:parsenoop},164:{n:"BrtEndFilterColumn",f:parsenoop},165:{n:"BrtBeginFilters",f:parsenoop},166:{n:"BrtEndFilters",f:parsenoop},167:{n:"BrtFilter",f:parsenoop},168:{n:"BrtColorFilter",f:parsenoop},169:{n:"BrtIconFilter",f:parsenoop},170:{n:"BrtTop10Filter",f:parsenoop},171:{n:"BrtDynamicFilter",f:parsenoop},172:{n:"BrtBeginCustomFilters",f:parsenoop},173:{n:"BrtEndCustomFilters",f:parsenoop},174:{n:"BrtCustomFilter",f:parsenoop},175:{n:"BrtAFilterDateGroupItem",f:parsenoop},176:{n:"BrtMergeCell",f:parse_BrtMergeCell},177:{n:"BrtBeginMergeCells",f:parsenoop},178:{n:"BrtEndMergeCells",f:parsenoop},179:{n:"BrtBeginPivotCacheDef",f:parsenoop},180:{n:"BrtEndPivotCacheDef",f:parsenoop},181:{n:"BrtBeginPCDFields",f:parsenoop},182:{n:"BrtEndPCDFields",f:parsenoop},183:{n:"BrtBeginPCDField",f:parsenoop},184:{n:"BrtEndPCDField",f:parsenoop},185:{n:"BrtBeginPCDSource",f:parsenoop},186:{n:"BrtEndPCDSource",f:parsenoop},187:{n:"BrtBeginPCDSRange",f:parsenoop},188:{n:"BrtEndPCDSRange",f:parsenoop},189:{n:"BrtBeginPCDFAtbl",f:parsenoop},190:{n:"BrtEndPCDFAtbl",f:parsenoop},191:{n:"BrtBeginPCDIRun",f:parsenoop},192:{n:"BrtEndPCDIRun",f:parsenoop},193:{n:"BrtBeginPivotCacheRecords",f:parsenoop},194:{n:"BrtEndPivotCacheRecords",f:parsenoop},195:{n:"BrtBeginPCDHierarchies",f:parsenoop},196:{n:"BrtEndPCDHierarchies",f:parsenoop},197:{n:"BrtBeginPCDHierarchy",f:parsenoop},198:{n:"BrtEndPCDHierarchy",f:parsenoop},199:{n:"BrtBeginPCDHFieldsUsage",f:parsenoop},200:{n:"BrtEndPCDHFieldsUsage",f:parsenoop},201:{n:"BrtBeginExtConnection",f:parsenoop},202:{n:"BrtEndExtConnection",f:parsenoop},203:{n:"BrtBeginECDbProps",f:parsenoop},204:{n:"BrtEndECDbProps",f:parsenoop},205:{n:"BrtBeginECOlapProps",f:parsenoop},206:{n:"BrtEndECOlapProps",f:parsenoop},207:{n:"BrtBeginPCDSConsol",f:parsenoop},208:{n:"BrtEndPCDSConsol",f:parsenoop},209:{n:"BrtBeginPCDSCPages",f:parsenoop},210:{n:"BrtEndPCDSCPages",f:parsenoop},211:{n:"BrtBeginPCDSCPage",f:parsenoop},212:{n:"BrtEndPCDSCPage",f:parsenoop},213:{n:"BrtBeginPCDSCPItem",f:parsenoop},214:{n:"BrtEndPCDSCPItem",f:parsenoop},215:{n:"BrtBeginPCDSCSets",f:parsenoop},216:{n:"BrtEndPCDSCSets",f:parsenoop},217:{n:"BrtBeginPCDSCSet",f:parsenoop},218:{n:"BrtEndPCDSCSet",f:parsenoop},219:{n:"BrtBeginPCDFGroup",f:parsenoop},220:{n:"BrtEndPCDFGroup",f:parsenoop},221:{n:"BrtBeginPCDFGItems",f:parsenoop},222:{n:"BrtEndPCDFGItems",f:parsenoop},223:{n:"BrtBeginPCDFGRange",f:parsenoop},224:{n:"BrtEndPCDFGRange",f:parsenoop},225:{n:"BrtBeginPCDFGDiscrete",f:parsenoop},226:{n:"BrtEndPCDFGDiscrete",f:parsenoop},227:{n:"BrtBeginPCDSDTupleCache",f:parsenoop},228:{n:"BrtEndPCDSDTupleCache",f:parsenoop},229:{n:"BrtBeginPCDSDTCEntries",f:parsenoop},230:{n:"BrtEndPCDSDTCEntries",f:parsenoop},231:{n:"BrtBeginPCDSDTCEMembers",f:parsenoop},232:{n:"BrtEndPCDSDTCEMembers",f:parsenoop},233:{n:"BrtBeginPCDSDTCEMember",f:parsenoop},234:{n:"BrtEndPCDSDTCEMember",f:parsenoop},235:{n:"BrtBeginPCDSDTCQueries",f:parsenoop},236:{n:"BrtEndPCDSDTCQueries",f:parsenoop},237:{n:"BrtBeginPCDSDTCQuery",f:parsenoop},238:{n:"BrtEndPCDSDTCQuery",f:parsenoop},239:{n:"BrtBeginPCDSDTCSets",f:parsenoop},240:{n:"BrtEndPCDSDTCSets",f:parsenoop},241:{n:"BrtBeginPCDSDTCSet",f:parsenoop},242:{n:"BrtEndPCDSDTCSet",f:parsenoop},243:{n:"BrtBeginPCDCalcItems",f:parsenoop},244:{n:"BrtEndPCDCalcItems",f:parsenoop},245:{n:"BrtBeginPCDCalcItem",f:parsenoop},246:{n:"BrtEndPCDCalcItem",f:parsenoop},247:{n:"BrtBeginPRule",f:parsenoop},248:{n:"BrtEndPRule",f:parsenoop},249:{n:"BrtBeginPRFilters",f:parsenoop},250:{n:"BrtEndPRFilters",f:parsenoop},251:{n:"BrtBeginPRFilter",f:parsenoop},252:{n:"BrtEndPRFilter",f:parsenoop},253:{n:"BrtBeginPNames",f:parsenoop},254:{n:"BrtEndPNames",f:parsenoop},255:{n:"BrtBeginPName",f:parsenoop},256:{n:"BrtEndPName",f:parsenoop},257:{n:"BrtBeginPNPairs",f:parsenoop},258:{n:"BrtEndPNPairs",f:parsenoop},259:{n:"BrtBeginPNPair",f:parsenoop},260:{n:"BrtEndPNPair",f:parsenoop},261:{n:"BrtBeginECWebProps",f:parsenoop},262:{n:"BrtEndECWebProps",f:parsenoop},263:{n:"BrtBeginEcWpTables",f:parsenoop},264:{n:"BrtEndECWPTables",f:parsenoop},265:{n:"BrtBeginECParams",f:parsenoop},266:{n:"BrtEndECParams",f:parsenoop},267:{n:"BrtBeginECParam",f:parsenoop},268:{n:"BrtEndECParam",f:parsenoop},269:{n:"BrtBeginPCDKPIs",f:parsenoop},270:{n:"BrtEndPCDKPIs",f:parsenoop},271:{n:"BrtBeginPCDKPI",f:parsenoop},272:{n:"BrtEndPCDKPI",f:parsenoop},273:{n:"BrtBeginDims",f:parsenoop},274:{n:"BrtEndDims",f:parsenoop},275:{n:"BrtBeginDim",f:parsenoop},276:{n:"BrtEndDim",f:parsenoop},277:{n:"BrtIndexPartEnd",f:parsenoop},278:{n:"BrtBeginStyleSheet",f:parsenoop},279:{n:"BrtEndStyleSheet",f:parsenoop},280:{n:"BrtBeginSXView",f:parsenoop},281:{n:"BrtEndSXVI",f:parsenoop},282:{n:"BrtBeginSXVI",f:parsenoop},283:{n:"BrtBeginSXVIs",f:parsenoop},284:{n:"BrtEndSXVIs",f:parsenoop},285:{n:"BrtBeginSXVD",f:parsenoop},286:{n:"BrtEndSXVD",f:parsenoop},287:{n:"BrtBeginSXVDs",f:parsenoop},288:{n:"BrtEndSXVDs",f:parsenoop},289:{n:"BrtBeginSXPI",f:parsenoop},290:{n:"BrtEndSXPI",f:parsenoop},291:{n:"BrtBeginSXPIs",f:parsenoop},292:{n:"BrtEndSXPIs",f:parsenoop},293:{n:"BrtBeginSXDI",f:parsenoop},294:{n:"BrtEndSXDI",f:parsenoop},295:{n:"BrtBeginSXDIs",f:parsenoop},296:{n:"BrtEndSXDIs",f:parsenoop},297:{n:"BrtBeginSXLI",f:parsenoop},298:{n:"BrtEndSXLI",f:parsenoop},299:{n:"BrtBeginSXLIRws",f:parsenoop},300:{n:"BrtEndSXLIRws",f:parsenoop},301:{n:"BrtBeginSXLICols",f:parsenoop},302:{n:"BrtEndSXLICols",f:parsenoop},303:{n:"BrtBeginSXFormat",f:parsenoop},304:{n:"BrtEndSXFormat",f:parsenoop},305:{n:"BrtBeginSXFormats",f:parsenoop},306:{n:"BrtEndSxFormats",f:parsenoop},307:{n:"BrtBeginSxSelect",f:parsenoop},308:{n:"BrtEndSxSelect",f:parsenoop},309:{n:"BrtBeginISXVDRws",f:parsenoop},310:{n:"BrtEndISXVDRws",f:parsenoop},311:{n:"BrtBeginISXVDCols",f:parsenoop},312:{n:"BrtEndISXVDCols",f:parsenoop},313:{n:"BrtEndSXLocation",f:parsenoop},314:{n:"BrtBeginSXLocation",f:parsenoop},315:{n:"BrtEndSXView",f:parsenoop},316:{n:"BrtBeginSXTHs",f:parsenoop},317:{n:"BrtEndSXTHs",f:parsenoop},318:{n:"BrtBeginSXTH",f:parsenoop},319:{n:"BrtEndSXTH",f:parsenoop},320:{n:"BrtBeginISXTHRws",f:parsenoop},321:{n:"BrtEndISXTHRws",f:parsenoop},322:{n:"BrtBeginISXTHCols",f:parsenoop},323:{n:"BrtEndISXTHCols",f:parsenoop},324:{n:"BrtBeginSXTDMPS",f:parsenoop},325:{n:"BrtEndSXTDMPs",f:parsenoop},326:{n:"BrtBeginSXTDMP",f:parsenoop},327:{n:"BrtEndSXTDMP",f:parsenoop},328:{n:"BrtBeginSXTHItems",f:parsenoop},329:{n:"BrtEndSXTHItems",f:parsenoop},330:{n:"BrtBeginSXTHItem",f:parsenoop},331:{n:"BrtEndSXTHItem",f:parsenoop},332:{n:"BrtBeginMetadata",f:parsenoop},333:{n:"BrtEndMetadata",f:parsenoop},334:{n:"BrtBeginEsmdtinfo",f:parsenoop},335:{n:"BrtMdtinfo",f:parsenoop},336:{n:"BrtEndEsmdtinfo",f:parsenoop},337:{n:"BrtBeginEsmdb",f:parsenoop},338:{n:"BrtEndEsmdb",f:parsenoop},339:{n:"BrtBeginEsfmd",f:parsenoop},340:{n:"BrtEndEsfmd",f:parsenoop},341:{n:"BrtBeginSingleCells",f:parsenoop},342:{n:"BrtEndSingleCells",f:parsenoop},343:{n:"BrtBeginList",f:parsenoop},344:{n:"BrtEndList",f:parsenoop},345:{n:"BrtBeginListCols",f:parsenoop},346:{n:"BrtEndListCols",f:parsenoop},347:{n:"BrtBeginListCol",f:parsenoop},348:{n:"BrtEndListCol",f:parsenoop},349:{n:"BrtBeginListXmlCPr",f:parsenoop},350:{n:"BrtEndListXmlCPr",f:parsenoop},351:{n:"BrtListCCFmla",f:parsenoop},352:{n:"BrtListTrFmla",f:parsenoop},353:{n:"BrtBeginExternals",f:parsenoop},354:{n:"BrtEndExternals",f:parsenoop},355:{n:"BrtSupBookSrc",f:parsenoop},357:{n:"BrtSupSelf",f:parsenoop},358:{n:"BrtSupSame",f:parsenoop},359:{n:"BrtSupTabs",f:parsenoop},360:{n:"BrtBeginSupBook",f:parsenoop},361:{n:"BrtPlaceholderName",f:parsenoop},362:{n:"BrtExternSheet",f:parsenoop},363:{n:"BrtExternTableStart",f:parsenoop},364:{n:"BrtExternTableEnd",f:parsenoop},366:{n:"BrtExternRowHdr",f:parsenoop},367:{n:"BrtExternCellBlank",f:parsenoop},368:{n:"BrtExternCellReal",f:parsenoop},369:{n:"BrtExternCellBool",f:parsenoop},370:{n:"BrtExternCellError",f:parsenoop},371:{n:"BrtExternCellString",f:parsenoop},372:{n:"BrtBeginEsmdx",f:parsenoop},373:{n:"BrtEndEsmdx",f:parsenoop},374:{n:"BrtBeginMdxSet",f:parsenoop},375:{n:"BrtEndMdxSet",f:parsenoop},376:{n:"BrtBeginMdxMbrProp",f:parsenoop},377:{n:"BrtEndMdxMbrProp",f:parsenoop},378:{n:"BrtBeginMdxKPI",f:parsenoop},379:{n:"BrtEndMdxKPI",f:parsenoop},380:{n:"BrtBeginEsstr",f:parsenoop},381:{n:"BrtEndEsstr",f:parsenoop},382:{n:"BrtBeginPRFItem",f:parsenoop},383:{n:"BrtEndPRFItem",f:parsenoop},384:{n:"BrtBeginPivotCacheIDs",f:parsenoop},385:{n:"BrtEndPivotCacheIDs",f:parsenoop},386:{n:"BrtBeginPivotCacheID",f:parsenoop},387:{n:"BrtEndPivotCacheID",f:parsenoop},388:{n:"BrtBeginISXVIs",f:parsenoop},389:{n:"BrtEndISXVIs",f:parsenoop},390:{n:"BrtBeginColInfos",f:parsenoop},391:{n:"BrtEndColInfos",f:parsenoop},392:{n:"BrtBeginRwBrk",f:parsenoop},393:{n:"BrtEndRwBrk",f:parsenoop},394:{n:"BrtBeginColBrk",f:parsenoop},395:{n:"BrtEndColBrk",f:parsenoop},396:{n:"BrtBrk",f:parsenoop},397:{n:"BrtUserBookView",f:parsenoop},398:{n:"BrtInfo",f:parsenoop},399:{n:"BrtCUsr",f:parsenoop},400:{n:"BrtUsr",f:parsenoop},401:{n:"BrtBeginUsers",f:parsenoop},403:{n:"BrtEOF",f:parsenoop},404:{n:"BrtUCR",f:parsenoop},405:{n:"BrtRRInsDel",f:parsenoop},406:{n:"BrtRREndInsDel",f:parsenoop},407:{n:"BrtRRMove",f:parsenoop},408:{n:"BrtRREndMove",f:parsenoop},409:{n:"BrtRRChgCell",f:parsenoop},410:{n:"BrtRREndChgCell",f:parsenoop},411:{n:"BrtRRHeader",f:parsenoop},412:{n:"BrtRRUserView",f:parsenoop},413:{n:"BrtRRRenSheet",f:parsenoop},414:{n:"BrtRRInsertSh",f:parsenoop},415:{n:"BrtRRDefName",f:parsenoop},416:{n:"BrtRRNote",f:parsenoop},417:{n:"BrtRRConflict",f:parsenoop},418:{n:"BrtRRTQSIF",f:parsenoop},419:{n:"BrtRRFormat",f:parsenoop},420:{n:"BrtRREndFormat",f:parsenoop},421:{n:"BrtRRAutoFmt",f:parsenoop},422:{n:"BrtBeginUserShViews",f:parsenoop},423:{n:"BrtBeginUserShView",f:parsenoop},424:{n:"BrtEndUserShView",f:parsenoop},425:{n:"BrtEndUserShViews",f:parsenoop},426:{n:"BrtArrFmla",f:parsenoop},427:{n:"BrtShrFmla",f:parsenoop},428:{n:"BrtTable",f:parsenoop},429:{n:"BrtBeginExtConnections",f:parsenoop},430:{n:"BrtEndExtConnections",f:parsenoop},431:{n:"BrtBeginPCDCalcMems",f:parsenoop},432:{n:"BrtEndPCDCalcMems",f:parsenoop},433:{n:"BrtBeginPCDCalcMem",f:parsenoop},434:{n:"BrtEndPCDCalcMem",f:parsenoop},435:{n:"BrtBeginPCDHGLevels",f:parsenoop},436:{n:"BrtEndPCDHGLevels",f:parsenoop},437:{n:"BrtBeginPCDHGLevel",f:parsenoop},438:{n:"BrtEndPCDHGLevel",f:parsenoop},439:{n:"BrtBeginPCDHGLGroups",f:parsenoop},440:{n:"BrtEndPCDHGLGroups",f:parsenoop},441:{n:"BrtBeginPCDHGLGroup",f:parsenoop},442:{n:"BrtEndPCDHGLGroup",f:parsenoop},443:{n:"BrtBeginPCDHGLGMembers",f:parsenoop},444:{n:"BrtEndPCDHGLGMembers",f:parsenoop},445:{n:"BrtBeginPCDHGLGMember",f:parsenoop},446:{n:"BrtEndPCDHGLGMember",f:parsenoop},447:{n:"BrtBeginQSI",f:parsenoop},448:{n:"BrtEndQSI",f:parsenoop},449:{n:"BrtBeginQSIR",f:parsenoop},450:{n:"BrtEndQSIR",f:parsenoop},451:{n:"BrtBeginDeletedNames",f:parsenoop},452:{n:"BrtEndDeletedNames",f:parsenoop},453:{n:"BrtBeginDeletedName",f:parsenoop},454:{n:"BrtEndDeletedName",f:parsenoop},455:{n:"BrtBeginQSIFs",f:parsenoop},456:{n:"BrtEndQSIFs",f:parsenoop},457:{n:"BrtBeginQSIF",f:parsenoop},458:{n:"BrtEndQSIF",f:parsenoop},459:{n:"BrtBeginAutoSortScope",f:parsenoop},460:{n:"BrtEndAutoSortScope",f:parsenoop},461:{n:"BrtBeginConditionalFormatting",f:parsenoop},462:{n:"BrtEndConditionalFormatting",f:parsenoop},463:{n:"BrtBeginCFRule",f:parsenoop},464:{n:"BrtEndCFRule",f:parsenoop},465:{n:"BrtBeginIconSet",f:parsenoop},466:{n:"BrtEndIconSet",f:parsenoop},467:{n:"BrtBeginDatabar",f:parsenoop},468:{n:"BrtEndDatabar",f:parsenoop},469:{n:"BrtBeginColorScale",f:parsenoop},470:{n:"BrtEndColorScale",f:parsenoop},471:{n:"BrtCFVO",f:parsenoop},472:{n:"BrtExternValueMeta",f:parsenoop},473:{n:"BrtBeginColorPalette",f:parsenoop},474:{n:"BrtEndColorPalette",f:parsenoop},475:{n:"BrtIndexedColor",f:parsenoop},476:{n:"BrtMargins",f:parsenoop},477:{n:"BrtPrintOptions",f:parsenoop},478:{n:"BrtPageSetup",f:parsenoop},479:{n:"BrtBeginHeaderFooter",f:parsenoop},480:{n:"BrtEndHeaderFooter",f:parsenoop},481:{n:"BrtBeginSXCrtFormat",f:parsenoop},482:{n:"BrtEndSXCrtFormat",f:parsenoop},483:{n:"BrtBeginSXCrtFormats",f:parsenoop},484:{n:"BrtEndSXCrtFormats",f:parsenoop},485:{n:"BrtWsFmtInfo",f:parsenoop},486:{n:"BrtBeginMgs",f:parsenoop},487:{n:"BrtEndMGs",f:parsenoop},488:{n:"BrtBeginMGMaps",f:parsenoop},489:{n:"BrtEndMGMaps",f:parsenoop},490:{n:"BrtBeginMG",f:parsenoop},491:{n:"BrtEndMG",f:parsenoop},492:{n:"BrtBeginMap",f:parsenoop},493:{n:"BrtEndMap",f:parsenoop},494:{n:"BrtHLink",f:parse_BrtHLink},495:{n:"BrtBeginDCon",f:parsenoop},496:{n:"BrtEndDCon",f:parsenoop},497:{n:"BrtBeginDRefs",f:parsenoop},498:{n:"BrtEndDRefs",f:parsenoop},499:{n:"BrtDRef",f:parsenoop},500:{n:"BrtBeginScenMan",f:parsenoop},501:{n:"BrtEndScenMan",f:parsenoop},502:{n:"BrtBeginSct",f:parsenoop},503:{n:"BrtEndSct",f:parsenoop},504:{n:"BrtSlc",f:parsenoop},505:{n:"BrtBeginDXFs",f:parsenoop},506:{n:"BrtEndDXFs",f:parsenoop},507:{n:"BrtDXF",f:parsenoop},508:{n:"BrtBeginTableStyles",f:parsenoop},509:{n:"BrtEndTableStyles",f:parsenoop},510:{n:"BrtBeginTableStyle",f:parsenoop},511:{n:"BrtEndTableStyle",f:parsenoop},512:{n:"BrtTableStyleElement",f:parsenoop},513:{n:"BrtTableStyleClient",f:parsenoop},514:{n:"BrtBeginVolDeps",f:parsenoop},515:{n:"BrtEndVolDeps",f:parsenoop},516:{n:"BrtBeginVolType",f:parsenoop},517:{n:"BrtEndVolType",f:parsenoop},518:{n:"BrtBeginVolMain",f:parsenoop},519:{n:"BrtEndVolMain",f:parsenoop},520:{n:"BrtBeginVolTopic",f:parsenoop},521:{n:"BrtEndVolTopic",f:parsenoop},522:{n:"BrtVolSubtopic",f:parsenoop},523:{n:"BrtVolRef",f:parsenoop},524:{n:"BrtVolNum",f:parsenoop},525:{n:"BrtVolErr",f:parsenoop},526:{n:"BrtVolStr",f:parsenoop},527:{n:"BrtVolBool",f:parsenoop},528:{n:"BrtBeginCalcChain$",f:parsenoop},529:{n:"BrtEndCalcChain$",f:parsenoop},530:{n:"BrtBeginSortState",f:parsenoop},531:{n:"BrtEndSortState",f:parsenoop},532:{n:"BrtBeginSortCond",f:parsenoop},533:{n:"BrtEndSortCond",f:parsenoop},534:{n:"BrtBookProtection",f:parsenoop},535:{n:"BrtSheetProtection",f:parsenoop},536:{n:"BrtRangeProtection",f:parsenoop},537:{n:"BrtPhoneticInfo",f:parsenoop},538:{n:"BrtBeginECTxtWiz",f:parsenoop},539:{n:"BrtEndECTxtWiz",f:parsenoop},540:{n:"BrtBeginECTWFldInfoLst",f:parsenoop},541:{n:"BrtEndECTWFldInfoLst",f:parsenoop},542:{n:"BrtBeginECTwFldInfo",f:parsenoop},548:{n:"BrtFileSharing",f:parsenoop},549:{n:"BrtOleSize",f:parsenoop},550:{n:"BrtDrawing",f:parsenoop},551:{n:"BrtLegacyDrawing",f:parsenoop},552:{n:"BrtLegacyDrawingHF",f:parsenoop},553:{n:"BrtWebOpt",f:parsenoop},554:{n:"BrtBeginWebPubItems",f:parsenoop},555:{n:"BrtEndWebPubItems",f:parsenoop},556:{n:"BrtBeginWebPubItem",f:parsenoop},557:{n:"BrtEndWebPubItem",f:parsenoop},558:{n:"BrtBeginSXCondFmt",f:parsenoop},559:{n:"BrtEndSXCondFmt",f:parsenoop},560:{n:"BrtBeginSXCondFmts",f:parsenoop},561:{n:"BrtEndSXCondFmts",f:parsenoop},562:{n:"BrtBkHim",f:parsenoop},564:{n:"BrtColor",f:parsenoop},565:{n:"BrtBeginIndexedColors",f:parsenoop},566:{n:"BrtEndIndexedColors",f:parsenoop},569:{n:"BrtBeginMRUColors",f:parsenoop},570:{n:"BrtEndMRUColors",f:parsenoop},572:{n:"BrtMRUColor",f:parsenoop},573:{n:"BrtBeginDVals",f:parsenoop},574:{n:"BrtEndDVals",f:parsenoop},577:{n:"BrtSupNameStart",f:parsenoop},578:{n:"BrtSupNameValueStart",f:parsenoop},579:{n:"BrtSupNameValueEnd",f:parsenoop},580:{n:"BrtSupNameNum",f:parsenoop},581:{n:"BrtSupNameErr",f:parsenoop},582:{n:"BrtSupNameSt",f:parsenoop},583:{n:"BrtSupNameNil",f:parsenoop},584:{n:"BrtSupNameBool",f:parsenoop},585:{n:"BrtSupNameFmla",f:parsenoop},586:{n:"BrtSupNameBits",f:parsenoop},587:{n:"BrtSupNameEnd",f:parsenoop},588:{n:"BrtEndSupBook",f:parsenoop},589:{n:"BrtCellSmartTagProperty",f:parsenoop},590:{n:"BrtBeginCellSmartTag",f:parsenoop},591:{n:"BrtEndCellSmartTag",f:parsenoop},592:{n:"BrtBeginCellSmartTags",f:parsenoop},593:{n:"BrtEndCellSmartTags",f:parsenoop},594:{n:"BrtBeginSmartTags",f:parsenoop},595:{n:"BrtEndSmartTags",f:parsenoop},596:{n:"BrtSmartTagType",f:parsenoop},597:{n:"BrtBeginSmartTagTypes",f:parsenoop},598:{n:"BrtEndSmartTagTypes",f:parsenoop},599:{n:"BrtBeginSXFilters",f:parsenoop},600:{n:"BrtEndSXFilters",f:parsenoop},601:{n:"BrtBeginSXFILTER",f:parsenoop},602:{n:"BrtEndSXFilter",f:parsenoop},603:{n:"BrtBeginFills",f:parsenoop},604:{n:"BrtEndFills",f:parsenoop},605:{n:"BrtBeginCellWatches",f:parsenoop},606:{n:"BrtEndCellWatches",f:parsenoop},607:{n:"BrtCellWatch",f:parsenoop},608:{n:"BrtBeginCRErrs",f:parsenoop},609:{n:"BrtEndCRErrs",f:parsenoop},610:{n:"BrtCrashRecErr",f:parsenoop},611:{n:"BrtBeginFonts",f:parsenoop},612:{n:"BrtEndFonts",f:parsenoop},613:{n:"BrtBeginBorders",f:parsenoop},614:{n:"BrtEndBorders",f:parsenoop},615:{n:"BrtBeginFmts",f:parsenoop},616:{n:"BrtEndFmts",f:parsenoop},617:{n:"BrtBeginCellXFs",f:parsenoop},618:{n:"BrtEndCellXFs",f:parsenoop},619:{n:"BrtBeginStyles",f:parsenoop},620:{n:"BrtEndStyles",f:parsenoop},625:{n:"BrtBigName",f:parsenoop},626:{n:"BrtBeginCellStyleXFs",f:parsenoop},627:{n:"BrtEndCellStyleXFs",f:parsenoop},628:{n:"BrtBeginComments",f:parsenoop},629:{n:"BrtEndComments",f:parsenoop},630:{n:"BrtBeginCommentAuthors",f:parsenoop},631:{n:"BrtEndCommentAuthors",f:parsenoop},632:{n:"BrtCommentAuthor",f:parse_BrtCommentAuthor},633:{n:"BrtBeginCommentList",f:parsenoop},634:{n:"BrtEndCommentList",f:parsenoop},635:{n:"BrtBeginComment",f:parse_BrtBeginComment},636:{n:"BrtEndComment",f:parsenoop},637:{n:"BrtCommentText",f:parse_BrtCommentText},638:{n:"BrtBeginOleObjects",f:parsenoop},639:{n:"BrtOleObject",f:parsenoop},640:{n:"BrtEndOleObjects",f:parsenoop},641:{n:"BrtBeginSxrules",f:parsenoop},642:{n:"BrtEndSxRules",f:parsenoop},643:{n:"BrtBeginActiveXControls",f:parsenoop},644:{n:"BrtActiveX",f:parsenoop},645:{n:"BrtEndActiveXControls",f:parsenoop},646:{n:"BrtBeginPCDSDTCEMembersSortBy",f:parsenoop},648:{n:"BrtBeginCellIgnoreECs",f:parsenoop},649:{n:"BrtCellIgnoreEC",f:parsenoop},650:{n:"BrtEndCellIgnoreECs",f:parsenoop},651:{n:"BrtCsProp",f:parsenoop},652:{n:"BrtCsPageSetup",f:parsenoop},653:{n:"BrtBeginUserCsViews",f:parsenoop},654:{n:"BrtEndUserCsViews",f:parsenoop},655:{n:"BrtBeginUserCsView",f:parsenoop},656:{n:"BrtEndUserCsView",f:parsenoop},657:{n:"BrtBeginPcdSFCIEntries",f:parsenoop},658:{n:"BrtEndPCDSFCIEntries",f:parsenoop},659:{n:"BrtPCDSFCIEntry",f:parsenoop},660:{n:"BrtBeginListParts",f:parsenoop},661:{n:"BrtListPart",f:parsenoop},662:{n:"BrtEndListParts",f:parsenoop},663:{n:"BrtSheetCalcProp",f:parsenoop},664:{n:"BrtBeginFnGroup",f:parsenoop},665:{n:"BrtFnGroup",f:parsenoop},666:{n:"BrtEndFnGroup",f:parsenoop},667:{n:"BrtSupAddin",f:parsenoop},668:{n:"BrtSXTDMPOrder",f:parsenoop},669:{n:"BrtCsProtection",f:parsenoop},671:{n:"BrtBeginWsSortMap",f:parsenoop},672:{n:"BrtEndWsSortMap",f:parsenoop},673:{n:"BrtBeginRRSort",f:parsenoop},674:{n:"BrtEndRRSort",f:parsenoop},675:{n:"BrtRRSortItem",f:parsenoop},676:{n:"BrtFileSharingIso",f:parsenoop},677:{n:"BrtBookProtectionIso",f:parsenoop},678:{n:"BrtSheetProtectionIso",f:parsenoop},679:{n:"BrtCsProtectionIso",f:parsenoop},680:{n:"BrtRangeProtectionIso",f:parsenoop},1024:{n:"BrtRwDescent",f:parsenoop},1025:{n:"BrtKnownFonts",f:parsenoop},1026:{n:"BrtBeginSXTupleSet",f:parsenoop},1027:{n:"BrtEndSXTupleSet",f:parsenoop},1028:{n:"BrtBeginSXTupleSetHeader",f:parsenoop},1029:{n:"BrtEndSXTupleSetHeader",f:parsenoop},1030:{n:"BrtSXTupleSetHeaderItem",f:parsenoop},1031:{n:"BrtBeginSXTupleSetData",f:parsenoop},1032:{n:"BrtEndSXTupleSetData",f:parsenoop},1033:{n:"BrtBeginSXTupleSetRow",f:parsenoop},1034:{n:"BrtEndSXTupleSetRow",f:parsenoop},1035:{n:"BrtSXTupleSetRowItem",f:parsenoop},1036:{n:"BrtNameExt",f:parsenoop},1037:{n:"BrtPCDH14",f:parsenoop},1038:{n:"BrtBeginPCDCalcMem14",f:parsenoop},1039:{n:"BrtEndPCDCalcMem14",f:parsenoop},1040:{n:"BrtSXTH14",f:parsenoop},1041:{n:"BrtBeginSparklineGroup",f:parsenoop},1042:{n:"BrtEndSparklineGroup",f:parsenoop},1043:{n:"BrtSparkline",f:parsenoop},1044:{n:"BrtSXDI14",f:parsenoop},1045:{n:"BrtWsFmtInfoEx14",f:parsenoop},1046:{n:"BrtBeginConditionalFormatting14",f:parsenoop},1047:{n:"BrtEndConditionalFormatting14",f:parsenoop},1048:{n:"BrtBeginCFRule14",f:parsenoop},1049:{n:"BrtEndCFRule14",f:parsenoop},1050:{n:"BrtCFVO14",f:parsenoop},1051:{n:"BrtBeginDatabar14",f:parsenoop},1052:{n:"BrtBeginIconSet14",f:parsenoop},1053:{n:"BrtDVal14",f:parsenoop},1054:{n:"BrtBeginDVals14",f:parsenoop},1055:{n:"BrtColor14",f:parsenoop},1056:{n:"BrtBeginSparklines",f:parsenoop},1057:{n:"BrtEndSparklines",f:parsenoop},1058:{n:"BrtBeginSparklineGroups",f:parsenoop},1059:{n:"BrtEndSparklineGroups",f:parsenoop},1061:{n:"BrtSXVD14",f:parsenoop},1062:{n:"BrtBeginSxview14",f:parsenoop},1063:{n:"BrtEndSxview14",f:parsenoop},1066:{n:"BrtBeginPCD14",f:parsenoop},1067:{n:"BrtEndPCD14",f:parsenoop},1068:{n:"BrtBeginExtConn14",f:parsenoop},1069:{n:"BrtEndExtConn14",f:parsenoop},1070:{n:"BrtBeginSlicerCacheIDs",f:parsenoop},1071:{n:"BrtEndSlicerCacheIDs",f:parsenoop},1072:{n:"BrtBeginSlicerCacheID",f:parsenoop},1073:{n:"BrtEndSlicerCacheID",f:parsenoop},1075:{n:"BrtBeginSlicerCache",f:parsenoop},1076:{n:"BrtEndSlicerCache",f:parsenoop},1077:{n:"BrtBeginSlicerCacheDef",f:parsenoop},1078:{n:"BrtEndSlicerCacheDef",f:parsenoop},1079:{n:"BrtBeginSlicersEx",f:parsenoop},1080:{n:"BrtEndSlicersEx",f:parsenoop},1081:{n:"BrtBeginSlicerEx",f:parsenoop},1082:{n:"BrtEndSlicerEx",f:parsenoop},1083:{n:"BrtBeginSlicer",f:parsenoop},1084:{n:"BrtEndSlicer",f:parsenoop},1085:{n:"BrtSlicerCachePivotTables",f:parsenoop},1086:{n:"BrtBeginSlicerCacheOlapImpl",f:parsenoop},1087:{n:"BrtEndSlicerCacheOlapImpl",f:parsenoop},1088:{n:"BrtBeginSlicerCacheLevelsData",f:parsenoop},1089:{n:"BrtEndSlicerCacheLevelsData",f:parsenoop},1090:{n:"BrtBeginSlicerCacheLevelData",f:parsenoop},1091:{n:"BrtEndSlicerCacheLevelData",f:parsenoop},1092:{n:"BrtBeginSlicerCacheSiRanges",f:parsenoop},1093:{n:"BrtEndSlicerCacheSiRanges",f:parsenoop},1094:{n:"BrtBeginSlicerCacheSiRange",f:parsenoop},1095:{n:"BrtEndSlicerCacheSiRange",f:parsenoop},1096:{n:"BrtSlicerCacheOlapItem",f:parsenoop},1097:{n:"BrtBeginSlicerCacheSelections",f:parsenoop},1098:{n:"BrtSlicerCacheSelection",f:parsenoop},1099:{n:"BrtEndSlicerCacheSelections",f:parsenoop},1100:{n:"BrtBeginSlicerCacheNative",f:parsenoop},1101:{n:"BrtEndSlicerCacheNative",f:parsenoop},1102:{n:"BrtSlicerCacheNativeItem",f:parsenoop},1103:{n:"BrtRangeProtection14",f:parsenoop},1104:{n:"BrtRangeProtectionIso14",f:parsenoop},1105:{n:"BrtCellIgnoreEC14",f:parsenoop},1111:{n:"BrtList14",f:parsenoop},1112:{n:"BrtCFIcon",f:parsenoop},1113:{n:"BrtBeginSlicerCachesPivotCacheIDs",f:parsenoop},1114:{n:"BrtEndSlicerCachesPivotCacheIDs",f:parsenoop},1115:{n:"BrtBeginSlicers",f:parsenoop},1116:{n:"BrtEndSlicers",f:parsenoop},1117:{n:"BrtWbProp14",f:parsenoop},1118:{n:"BrtBeginSXEdit",f:parsenoop},1119:{n:"BrtEndSXEdit",f:parsenoop},1120:{n:"BrtBeginSXEdits",f:parsenoop},1121:{n:"BrtEndSXEdits",f:parsenoop},1122:{n:"BrtBeginSXChange",f:parsenoop},1123:{n:"BrtEndSXChange",f:parsenoop},1124:{n:"BrtBeginSXChanges",f:parsenoop},1125:{n:"BrtEndSXChanges",f:parsenoop},1126:{n:"BrtSXTupleItems",f:parsenoop},1128:{n:"BrtBeginSlicerStyle",f:parsenoop},1129:{n:"BrtEndSlicerStyle",f:parsenoop},1130:{n:"BrtSlicerStyleElement",f:parsenoop},1131:{n:"BrtBeginStyleSheetExt14",f:parsenoop},1132:{n:"BrtEndStyleSheetExt14",f:parsenoop},1133:{n:"BrtBeginSlicerCachesPivotCacheID",f:parsenoop},1134:{n:"BrtEndSlicerCachesPivotCacheID",f:parsenoop},1135:{n:"BrtBeginConditionalFormattings",f:parsenoop},1136:{n:"BrtEndConditionalFormattings",f:parsenoop},1137:{n:"BrtBeginPCDCalcMemExt",f:parsenoop},1138:{n:"BrtEndPCDCalcMemExt",f:parsenoop},1139:{n:"BrtBeginPCDCalcMemsExt",f:parsenoop},1140:{n:"BrtEndPCDCalcMemsExt",f:parsenoop},1141:{n:"BrtPCDField14",f:parsenoop},1142:{n:"BrtBeginSlicerStyles",f:parsenoop},1143:{n:"BrtEndSlicerStyles",f:parsenoop},1144:{n:"BrtBeginSlicerStyleElements",f:parsenoop},1145:{n:"BrtEndSlicerStyleElements",f:parsenoop},1146:{n:"BrtCFRuleExt",f:parsenoop},1147:{n:"BrtBeginSXCondFmt14",f:parsenoop},1148:{n:"BrtEndSXCondFmt14",f:parsenoop},1149:{n:"BrtBeginSXCondFmts14",f:parsenoop},1150:{n:"BrtEndSXCondFmts14",f:parsenoop},1152:{n:"BrtBeginSortCond14",f:parsenoop},1153:{n:"BrtEndSortCond14",f:parsenoop},1154:{n:"BrtEndDVals14",f:parsenoop},1155:{n:"BrtEndIconSet14",f:parsenoop},1156:{n:"BrtEndDatabar14",f:parsenoop},1157:{n:"BrtBeginColorScale14",f:parsenoop},1158:{n:"BrtEndColorScale14",f:parsenoop},1159:{n:"BrtBeginSxrules14",f:parsenoop},1160:{n:"BrtEndSxrules14",f:parsenoop},1161:{n:"BrtBeginPRule14",f:parsenoop},1162:{n:"BrtEndPRule14",f:parsenoop},1163:{n:"BrtBeginPRFilters14",f:parsenoop},1164:{n:"BrtEndPRFilters14",f:parsenoop},1165:{n:"BrtBeginPRFilter14",f:parsenoop},1166:{n:"BrtEndPRFilter14",f:parsenoop},1167:{n:"BrtBeginPRFItem14",f:parsenoop},1168:{n:"BrtEndPRFItem14",f:parsenoop},1169:{n:"BrtBeginCellIgnoreECs14",f:parsenoop},1170:{n:"BrtEndCellIgnoreECs14",f:parsenoop},1171:{n:"BrtDxf14",f:parsenoop},1172:{n:"BrtBeginDxF14s",f:parsenoop},1173:{n:"BrtEndDxf14s",f:parsenoop},1177:{n:"BrtFilter14",f:parsenoop},1178:{n:"BrtBeginCustomFilters14",f:parsenoop},1180:{n:"BrtCustomFilter14",f:parsenoop},1181:{n:"BrtIconFilter14",f:parsenoop},1182:{n:"BrtPivotCacheConnectionName",f:parsenoop},2048:{n:"BrtBeginDecoupledPivotCacheIDs",f:parsenoop},2049:{n:"BrtEndDecoupledPivotCacheIDs",f:parsenoop},2050:{n:"BrtDecoupledPivotCacheID",f:parsenoop},2051:{n:"BrtBeginPivotTableRefs",f:parsenoop},2052:{n:"BrtEndPivotTableRefs",f:parsenoop},2053:{n:"BrtPivotTableRef",f:parsenoop},2054:{n:"BrtSlicerCacheBookPivotTables",f:parsenoop},2055:{n:"BrtBeginSxvcells",f:parsenoop},2056:{n:"BrtEndSxvcells",f:parsenoop},2057:{n:"BrtBeginSxRow",f:parsenoop},2058:{n:"BrtEndSxRow",f:parsenoop},2060:{n:"BrtPcdCalcMem15",f:parsenoop},2067:{n:"BrtQsi15",f:parsenoop},2068:{n:"BrtBeginWebExtensions",f:parsenoop},2069:{n:"BrtEndWebExtensions",f:parsenoop},2070:{n:"BrtWebExtension",f:parsenoop},2071:{n:"BrtAbsPath15",f:parsenoop},2072:{n:"BrtBeginPivotTableUISettings",f:parsenoop},2073:{n:"BrtEndPivotTableUISettings",f:parsenoop},2075:{n:"BrtTableSlicerCacheIDs",f:parsenoop},2076:{n:"BrtTableSlicerCacheID",f:parsenoop},2077:{n:"BrtBeginTableSlicerCache",f:parsenoop},2078:{n:"BrtEndTableSlicerCache",f:parsenoop},2079:{n:"BrtSxFilter15",f:parsenoop},2080:{n:"BrtBeginTimelineCachePivotCacheIDs",f:parsenoop},2081:{n:"BrtEndTimelineCachePivotCacheIDs",f:parsenoop},2082:{n:"BrtTimelineCachePivotCacheID",f:parsenoop},2083:{n:"BrtBeginTimelineCacheIDs",f:parsenoop},2084:{n:"BrtEndTimelineCacheIDs",f:parsenoop},2085:{n:"BrtBeginTimelineCacheID",f:parsenoop},2086:{n:"BrtEndTimelineCacheID",f:parsenoop},2087:{n:"BrtBeginTimelinesEx",f:parsenoop},2088:{n:"BrtEndTimelinesEx",f:parsenoop},2089:{n:"BrtBeginTimelineEx",f:parsenoop},2090:{n:"BrtEndTimelineEx",f:parsenoop},2091:{n:"BrtWorkBookPr15",f:parsenoop},2092:{n:"BrtPCDH15",f:parsenoop},2093:{n:"BrtBeginTimelineStyle",f:parsenoop},2094:{n:"BrtEndTimelineStyle",f:parsenoop},2095:{n:"BrtTimelineStyleElement",f:parsenoop},2096:{n:"BrtBeginTimelineStylesheetExt15",f:parsenoop},2097:{n:"BrtEndTimelineStylesheetExt15",f:parsenoop},2098:{n:"BrtBeginTimelineStyles",f:parsenoop},2099:{n:"BrtEndTimelineStyles",f:parsenoop},2100:{n:"BrtBeginTimelineStyleElements",f:parsenoop},2101:{n:"BrtEndTimelineStyleElements",f:parsenoop},2102:{n:"BrtDxf15",f:parsenoop},2103:{n:"BrtBeginDxfs15",f:parsenoop},2104:{n:"brtEndDxfs15",f:parsenoop},2105:{n:"BrtSlicerCacheHideItemsWithNoData",f:parsenoop},2106:{n:"BrtBeginItemUniqueNames",f:parsenoop},2107:{n:"BrtEndItemUniqueNames",f:parsenoop},2108:{n:"BrtItemUniqueName",f:parsenoop},2109:{n:"BrtBeginExtConn15",f:parsenoop},2110:{n:"BrtEndExtConn15",f:parsenoop},2111:{n:"BrtBeginOledbPr15",f:parsenoop},2112:{n:"BrtEndOledbPr15",f:parsenoop},2113:{n:"BrtBeginDataFeedPr15",f:parsenoop},2114:{n:"BrtEndDataFeedPr15",f:parsenoop},2115:{n:"BrtTextPr15",f:parsenoop},2116:{n:"BrtRangePr15",f:parsenoop},2117:{n:"BrtDbCommand15",f:parsenoop},2118:{n:"BrtBeginDbTables15",f:parsenoop},2119:{n:"BrtEndDbTables15",f:parsenoop},2120:{n:"BrtDbTable15",f:parsenoop},2121:{n:"BrtBeginDataModel",f:parsenoop},2122:{n:"BrtEndDataModel",f:parsenoop},2123:{n:"BrtBeginModelTables",f:parsenoop},2124:{n:"BrtEndModelTables",f:parsenoop},2125:{n:"BrtModelTable",f:parsenoop},2126:{n:"BrtBeginModelRelationships",f:parsenoop},2127:{n:"BrtEndModelRelationships",f:parsenoop},2128:{n:"BrtModelRelationship",f:parsenoop},2129:{n:"BrtBeginECTxtWiz15",f:parsenoop},2130:{n:"BrtEndECTxtWiz15",f:parsenoop},2131:{n:"BrtBeginECTWFldInfoLst15",f:parsenoop},2132:{n:"BrtEndECTWFldInfoLst15",f:parsenoop},2133:{n:"BrtBeginECTWFldInfo15",f:parsenoop},2134:{n:"BrtFieldListActiveItem",f:parsenoop},2135:{n:"BrtPivotCacheIdVersion",f:parsenoop},2136:{n:"BrtSXDI15",f:parsenoop},65535:{n:"",f:parsenoop}};
 var evert_RE=evert_key(XLSBRecordEnum,"n");var XLSRecordEnum={3:{n:"BIFF2NUM",f:parse_BIFF2NUM},4:{n:"BIFF2STR",f:parse_BIFF2STR},6:{n:"Formula",f:parse_Formula},9:{n:"BOF",f:parse_BOF},10:{n:"EOF",f:parse_EOF},12:{n:"CalcCount",f:parse_CalcCount},13:{n:"CalcMode",f:parse_CalcMode},14:{n:"CalcPrecision",f:parse_CalcPrecision},15:{n:"CalcRefMode",f:parse_CalcRefMode},16:{n:"CalcDelta",f:parse_CalcDelta},17:{n:"CalcIter",f:parse_CalcIter},18:{n:"Protect",f:parse_Protect},19:{n:"Password",f:parse_Password},20:{n:"Header",f:parse_Header},21:{n:"Footer",f:parse_Footer},23:{n:"ExternSheet",f:parse_ExternSheet},24:{n:"Lbl",f:parse_Lbl},25:{n:"WinProtect",f:parse_WinProtect},26:{n:"VerticalPageBreaks",f:parse_VerticalPageBreaks},27:{n:"HorizontalPageBreaks",f:parse_HorizontalPageBreaks},28:{n:"Note",f:parse_Note},29:{n:"Selection",f:parse_Selection},34:{n:"Date1904",f:parse_Date1904},35:{n:"ExternName",f:parse_ExternName},38:{n:"LeftMargin",f:parse_LeftMargin},39:{n:"RightMargin",f:parse_RightMargin},40:{n:"TopMargin",f:parse_TopMargin},41:{n:"BottomMargin",f:parse_BottomMargin},42:{n:"PrintRowCol",f:parse_PrintRowCol},43:{n:"PrintGrid",f:parse_PrintGrid},47:{n:"FilePass",f:parse_FilePass},49:{n:"Font",f:parse_Font},51:{n:"PrintSize",f:parse_PrintSize},60:{n:"Continue",f:parse_Continue},61:{n:"Window1",f:parse_Window1},64:{n:"Backup",f:parse_Backup},65:{n:"Pane",f:parse_Pane},66:{n:"CodePage",f:parse_CodePage},77:{n:"Pls",f:parse_Pls},80:{n:"DCon",f:parse_DCon},81:{n:"DConRef",f:parse_DConRef},82:{n:"DConName",f:parse_DConName},85:{n:"DefColWidth",f:parse_DefColWidth},89:{n:"XCT",f:parse_XCT},90:{n:"CRN",f:parse_CRN},91:{n:"FileSharing",f:parse_FileSharing},92:{n:"WriteAccess",f:parse_WriteAccess},93:{n:"Obj",f:parse_Obj},94:{n:"Uncalced",f:parse_Uncalced},95:{n:"CalcSaveRecalc",f:parse_CalcSaveRecalc},96:{n:"Template",f:parse_Template},97:{n:"Intl",f:parse_Intl},99:{n:"ObjProtect",f:parse_ObjProtect},125:{n:"ColInfo",f:parse_ColInfo},128:{n:"Guts",f:parse_Guts},129:{n:"WsBool",f:parse_WsBool},130:{n:"GridSet",f:parse_GridSet},131:{n:"HCenter",f:parse_HCenter},132:{n:"VCenter",f:parse_VCenter},133:{n:"BoundSheet8",f:parse_BoundSheet8},134:{n:"WriteProtect",f:parse_WriteProtect},140:{n:"Country",f:parse_Country},141:{n:"HideObj",f:parse_HideObj},144:{n:"Sort",f:parse_Sort},146:{n:"Palette",f:parse_Palette},151:{n:"Sync",f:parse_Sync},152:{n:"LPr",f:parse_LPr},153:{n:"DxGCol",f:parse_DxGCol},154:{n:"FnGroupName",f:parse_FnGroupName},155:{n:"FilterMode",f:parse_FilterMode},156:{n:"BuiltInFnGroupCount",f:parse_BuiltInFnGroupCount},157:{n:"AutoFilterInfo",f:parse_AutoFilterInfo},158:{n:"AutoFilter",f:parse_AutoFilter},160:{n:"Scl",f:parse_Scl},161:{n:"Setup",f:parse_Setup},174:{n:"ScenMan",f:parse_ScenMan},175:{n:"SCENARIO",f:parse_SCENARIO},176:{n:"SxView",f:parse_SxView},177:{n:"Sxvd",f:parse_Sxvd},178:{n:"SXVI",f:parse_SXVI},180:{n:"SxIvd",f:parse_SxIvd},181:{n:"SXLI",f:parse_SXLI},182:{n:"SXPI",f:parse_SXPI},184:{n:"DocRoute",f:parse_DocRoute},185:{n:"RecipName",f:parse_RecipName},189:{n:"MulRk",f:parse_MulRk},190:{n:"MulBlank",f:parse_MulBlank},193:{n:"Mms",f:parse_Mms},197:{n:"SXDI",f:parse_SXDI},198:{n:"SXDB",f:parse_SXDB},199:{n:"SXFDB",f:parse_SXFDB},200:{n:"SXDBB",f:parse_SXDBB},201:{n:"SXNum",f:parse_SXNum},202:{n:"SxBool",f:parse_SxBool},203:{n:"SxErr",f:parse_SxErr},204:{n:"SXInt",f:parse_SXInt},205:{n:"SXString",f:parse_SXString},206:{n:"SXDtr",f:parse_SXDtr},207:{n:"SxNil",f:parse_SxNil},208:{n:"SXTbl",f:parse_SXTbl},209:{n:"SXTBRGIITM",f:parse_SXTBRGIITM},210:{n:"SxTbpg",f:parse_SxTbpg},211:{n:"ObProj",f:parse_ObProj},213:{n:"SXStreamID",f:parse_SXStreamID},215:{n:"DBCell",f:parse_DBCell},216:{n:"SXRng",f:parse_SXRng},217:{n:"SxIsxoper",f:parse_SxIsxoper},218:{n:"BookBool",f:parse_BookBool},220:{n:"DbOrParamQry",f:parse_DbOrParamQry},221:{n:"ScenarioProtect",f:parse_ScenarioProtect},222:{n:"OleObjectSize",f:parse_OleObjectSize},224:{n:"XF",f:parse_XF},225:{n:"InterfaceHdr",f:parse_InterfaceHdr},226:{n:"InterfaceEnd",f:parse_InterfaceEnd},227:{n:"SXVS",f:parse_SXVS},229:{n:"MergeCells",f:parse_MergeCells},233:{n:"BkHim",f:parse_BkHim},235:{n:"MsoDrawingGroup",f:parse_MsoDrawingGroup},236:{n:"MsoDrawing",f:parse_MsoDrawing},237:{n:"MsoDrawingSelection",f:parse_MsoDrawingSelection},239:{n:"PhoneticInfo",f:parse_PhoneticInfo},240:{n:"SxRule",f:parse_SxRule},241:{n:"SXEx",f:parse_SXEx},242:{n:"SxFilt",f:parse_SxFilt},244:{n:"SxDXF",f:parse_SxDXF},245:{n:"SxItm",f:parse_SxItm},246:{n:"SxName",f:parse_SxName},247:{n:"SxSelect",f:parse_SxSelect},248:{n:"SXPair",f:parse_SXPair},249:{n:"SxFmla",f:parse_SxFmla},251:{n:"SxFormat",f:parse_SxFormat},252:{n:"SST",f:parse_SST},253:{n:"LabelSst",f:parse_LabelSst},255:{n:"ExtSST",f:parse_ExtSST},256:{n:"SXVDEx",f:parse_SXVDEx},259:{n:"SXFormula",f:parse_SXFormula},290:{n:"SXDBEx",f:parse_SXDBEx},311:{n:"RRDInsDel",f:parse_RRDInsDel},312:{n:"RRDHead",f:parse_RRDHead},315:{n:"RRDChgCell",f:parse_RRDChgCell},317:{n:"RRTabId",f:parse_RRTabId},318:{n:"RRDRenSheet",f:parse_RRDRenSheet},319:{n:"RRSort",f:parse_RRSort},320:{n:"RRDMove",f:parse_RRDMove},330:{n:"RRFormat",f:parse_RRFormat},331:{n:"RRAutoFmt",f:parse_RRAutoFmt},333:{n:"RRInsertSh",f:parse_RRInsertSh},334:{n:"RRDMoveBegin",f:parse_RRDMoveBegin},335:{n:"RRDMoveEnd",f:parse_RRDMoveEnd},336:{n:"RRDInsDelBegin",f:parse_RRDInsDelBegin},337:{n:"RRDInsDelEnd",f:parse_RRDInsDelEnd},338:{n:"RRDConflict",f:parse_RRDConflict},339:{n:"RRDDefName",f:parse_RRDDefName},340:{n:"RRDRstEtxp",f:parse_RRDRstEtxp},351:{n:"LRng",f:parse_LRng},352:{n:"UsesELFs",f:parse_UsesELFs},353:{n:"DSF",f:parse_DSF},401:{n:"CUsr",f:parse_CUsr},402:{n:"CbUsr",f:parse_CbUsr},403:{n:"UsrInfo",f:parse_UsrInfo},404:{n:"UsrExcl",f:parse_UsrExcl},405:{n:"FileLock",f:parse_FileLock},406:{n:"RRDInfo",f:parse_RRDInfo},407:{n:"BCUsrs",f:parse_BCUsrs},408:{n:"UsrChk",f:parse_UsrChk},425:{n:"UserBView",f:parse_UserBView},426:{n:"UserSViewBegin",f:parse_UserSViewBegin},427:{n:"UserSViewEnd",f:parse_UserSViewEnd},428:{n:"RRDUserView",f:parse_RRDUserView},429:{n:"Qsi",f:parse_Qsi},430:{n:"SupBook",f:parse_SupBook},431:{n:"Prot4Rev",f:parse_Prot4Rev},432:{n:"CondFmt",f:parse_CondFmt},433:{n:"CF",f:parse_CF},434:{n:"DVal",f:parse_DVal},437:{n:"DConBin",f:parse_DConBin},438:{n:"TxO",f:parse_TxO},439:{n:"RefreshAll",f:parse_RefreshAll},440:{n:"HLink",f:parse_HLink},441:{n:"Lel",f:parse_Lel},442:{n:"CodeName",f:parse_XLSCodeName},443:{n:"SXFDBType",f:parse_SXFDBType},444:{n:"Prot4RevPass",f:parse_Prot4RevPass},445:{n:"ObNoMacros",f:parse_ObNoMacros},446:{n:"Dv",f:parse_Dv},448:{n:"Excel9File",f:parse_Excel9File},449:{n:"RecalcId",f:parse_RecalcId,r:2},450:{n:"EntExU2",f:parse_EntExU2},512:{n:"Dimensions",f:parse_Dimensions},513:{n:"Blank",f:parse_Blank},515:{n:"Number",f:parse_Number},516:{n:"Label",f:parse_Label},517:{n:"BoolErr",f:parse_BoolErr},519:{n:"String",f:parse_String},520:{n:"Row",f:parse_Row},523:{n:"Index",f:parse_Index},545:{n:"Array",f:parse_Array},549:{n:"DefaultRowHeight",f:parse_DefaultRowHeight},566:{n:"Table",f:parse_Table},574:{n:"Window2",f:parse_Window2},638:{n:"RK",f:parse_RK},659:{n:"Style",f:parse_Style},1048:{n:"BigName",f:parse_BigName},1054:{n:"Format",f:parse_Format},1084:{n:"ContinueBigName",f:parse_ContinueBigName},1212:{n:"ShrFmla",f:parse_ShrFmla},2048:{n:"HLinkTooltip",f:parse_HLinkTooltip},2049:{n:"WebPub",f:parse_WebPub},2050:{n:"QsiSXTag",f:parse_QsiSXTag},2051:{n:"DBQueryExt",f:parse_DBQueryExt},2052:{n:"ExtString",f:parse_ExtString},2053:{n:"TxtQry",f:parse_TxtQry},2054:{n:"Qsir",f:parse_Qsir},2055:{n:"Qsif",f:parse_Qsif},2056:{n:"RRDTQSIF",f:parse_RRDTQSIF},2057:{n:"BOF",f:parse_BOF},2058:{n:"OleDbConn",f:parse_OleDbConn},2059:{n:"WOpt",f:parse_WOpt},2060:{n:"SXViewEx",f:parse_SXViewEx},2061:{n:"SXTH",f:parse_SXTH},2062:{n:"SXPIEx",f:parse_SXPIEx},2063:{n:"SXVDTEx",f:parse_SXVDTEx},2064:{n:"SXViewEx9",f:parse_SXViewEx9},2066:{n:"ContinueFrt",f:parse_ContinueFrt},2067:{n:"RealTimeData",f:parse_RealTimeData},2128:{n:"ChartFrtInfo",f:parse_ChartFrtInfo},2129:{n:"FrtWrapper",f:parse_FrtWrapper},2130:{n:"StartBlock",f:parse_StartBlock},2131:{n:"EndBlock",f:parse_EndBlock},2132:{n:"StartObject",f:parse_StartObject},2133:{n:"EndObject",f:parse_EndObject},2134:{n:"CatLab",f:parse_CatLab},2135:{n:"YMult",f:parse_YMult},2136:{n:"SXViewLink",f:parse_SXViewLink},2137:{n:"PivotChartBits",f:parse_PivotChartBits},2138:{n:"FrtFontList",f:parse_FrtFontList},2146:{n:"SheetExt",f:parse_SheetExt},2147:{n:"BookExt",f:parse_BookExt,r:12},2148:{n:"SXAddl",f:parse_SXAddl},2149:{n:"CrErr",f:parse_CrErr},2150:{n:"HFPicture",f:parse_HFPicture},2151:{n:"FeatHdr",f:parse_FeatHdr},2152:{n:"Feat",f:parse_Feat},2154:{n:"DataLabExt",f:parse_DataLabExt},2155:{n:"DataLabExtContents",f:parse_DataLabExtContents},2156:{n:"CellWatch",f:parse_CellWatch},2161:{n:"FeatHdr11",f:parse_FeatHdr11},2162:{n:"Feature11",f:parse_Feature11},2164:{n:"DropDownObjIds",f:parse_DropDownObjIds},2165:{n:"ContinueFrt11",f:parse_ContinueFrt11},2166:{n:"DConn",f:parse_DConn},2167:{n:"List12",f:parse_List12},2168:{n:"Feature12",f:parse_Feature12},2169:{n:"CondFmt12",f:parse_CondFmt12},2170:{n:"CF12",f:parse_CF12},2171:{n:"CFEx",f:parse_CFEx},2172:{n:"XFCRC",f:parse_XFCRC,r:12},2173:{n:"XFExt",f:parse_XFExt,r:12},2174:{n:"AutoFilter12",f:parse_AutoFilter12},2175:{n:"ContinueFrt12",f:parse_ContinueFrt12},2180:{n:"MDTInfo",f:parse_MDTInfo},2181:{n:"MDXStr",f:parse_MDXStr},2182:{n:"MDXTuple",f:parse_MDXTuple},2183:{n:"MDXSet",f:parse_MDXSet},2184:{n:"MDXProp",f:parse_MDXProp},2185:{n:"MDXKPI",f:parse_MDXKPI},2186:{n:"MDB",f:parse_MDB},2187:{n:"PLV",f:parse_PLV},2188:{n:"Compat12",f:parse_Compat12,r:12},2189:{n:"DXF",f:parse_DXF},2190:{n:"TableStyles",f:parse_TableStyles,r:12},2191:{n:"TableStyle",f:parse_TableStyle},2192:{n:"TableStyleElement",f:parse_TableStyleElement},2194:{n:"StyleExt",f:parse_StyleExt},2195:{n:"NamePublish",f:parse_NamePublish},2196:{n:"NameCmt",f:parse_NameCmt},2197:{n:"SortData",f:parse_SortData},2198:{n:"Theme",f:parse_Theme,r:12},2199:{n:"GUIDTypeLib",f:parse_GUIDTypeLib},2200:{n:"FnGrp12",f:parse_FnGrp12},2201:{n:"NameFnGrp12",f:parse_NameFnGrp12},2202:{n:"MTRSettings",f:parse_MTRSettings,r:12},2203:{n:"CompressPictures",f:parse_CompressPictures},2204:{n:"HeaderFooter",f:parse_HeaderFooter},2205:{n:"CrtLayout12",f:parse_CrtLayout12},2206:{n:"CrtMlFrt",f:parse_CrtMlFrt},2207:{n:"CrtMlFrtContinue",f:parse_CrtMlFrtContinue},2211:{n:"ForceFullCalculation",f:parse_ForceFullCalculation},2212:{n:"ShapePropsStream",f:parse_ShapePropsStream},2213:{n:"TextPropsStream",f:parse_TextPropsStream},2214:{n:"RichTextStream",f:parse_RichTextStream},2215:{n:"CrtLayout12A",f:parse_CrtLayout12A},4097:{n:"Units",f:parse_Units},4098:{n:"Chart",f:parse_Chart},4099:{n:"Series",f:parse_Series},4102:{n:"DataFormat",f:parse_DataFormat},4103:{n:"LineFormat",f:parse_LineFormat},4105:{n:"MarkerFormat",f:parse_MarkerFormat},4106:{n:"AreaFormat",f:parse_AreaFormat},4107:{n:"PieFormat",f:parse_PieFormat},4108:{n:"AttachedLabel",f:parse_AttachedLabel},4109:{n:"SeriesText",f:parse_SeriesText},4116:{n:"ChartFormat",f:parse_ChartFormat},4117:{n:"Legend",f:parse_Legend},4118:{n:"SeriesList",f:parse_SeriesList},4119:{n:"Bar",f:parse_Bar},4120:{n:"Line",f:parse_Line},4121:{n:"Pie",f:parse_Pie},4122:{n:"Area",f:parse_Area},4123:{n:"Scatter",f:parse_Scatter},4124:{n:"CrtLine",f:parse_CrtLine},4125:{n:"Axis",f:parse_Axis},4126:{n:"Tick",f:parse_Tick},4127:{n:"ValueRange",f:parse_ValueRange},4128:{n:"CatSerRange",f:parse_CatSerRange},4129:{n:"AxisLine",f:parse_AxisLine},4130:{n:"CrtLink",f:parse_CrtLink},4132:{n:"DefaultText",f:parse_DefaultText},4133:{n:"Text",f:parse_Text},4134:{n:"FontX",f:parse_FontX},4135:{n:"ObjectLink",f:parse_ObjectLink},4146:{n:"Frame",f:parse_Frame},4147:{n:"Begin",f:parse_Begin},4148:{n:"End",f:parse_End},4149:{n:"PlotArea",f:parse_PlotArea},4154:{n:"Chart3d",f:parse_Chart3d},4156:{n:"PicF",f:parse_PicF},4157:{n:"DropBar",f:parse_DropBar},4158:{n:"Radar",f:parse_Radar},4159:{n:"Surf",f:parse_Surf},4160:{n:"RadarArea",f:parse_RadarArea},4161:{n:"AxisParent",f:parse_AxisParent},4163:{n:"LegendException",f:parse_LegendException},4164:{n:"ShtProps",f:parse_ShtProps},4165:{n:"SerToCrt",f:parse_SerToCrt},4166:{n:"AxesUsed",f:parse_AxesUsed},4168:{n:"SBaseRef",f:parse_SBaseRef},4170:{n:"SerParent",f:parse_SerParent},4171:{n:"SerAuxTrend",f:parse_SerAuxTrend},4174:{n:"IFmtRecord",f:parse_IFmtRecord},4175:{n:"Pos",f:parse_Pos},4176:{n:"AlRuns",f:parse_AlRuns},4177:{n:"BRAI",f:parse_BRAI},4187:{n:"SerAuxErrBar",f:parse_SerAuxErrBar},4188:{n:"ClrtClient",f:parse_ClrtClient},4189:{n:"SerFmt",f:parse_SerFmt},4191:{n:"Chart3DBarShape",f:parse_Chart3DBarShape},4192:{n:"Fbi",f:parse_Fbi},4193:{n:"BopPop",f:parse_BopPop},4194:{n:"AxcExt",f:parse_AxcExt},4195:{n:"Dat",f:parse_Dat},4196:{n:"PlotGrowth",f:parse_PlotGrowth},4197:{n:"SIIndex",f:parse_SIIndex},4198:{n:"GelFrame",f:parse_GelFrame},4199:{n:"BopPopCustom",f:parse_BopPopCustom},4200:{n:"Fbi2",f:parse_Fbi2},22:{n:"ExternCount",f:parsenoop},126:{n:"RK",f:parsenoop},127:{n:"ImData",f:parsenoop},135:{n:"Addin",f:parsenoop},136:{n:"Edg",f:parsenoop},137:{n:"Pub",f:parsenoop},145:{n:"Sub",f:parsenoop},148:{n:"LHRecord",f:parsenoop},149:{n:"LHNGraph",f:parsenoop},150:{n:"Sound",f:parsenoop},169:{n:"CoordList",f:parsenoop},171:{n:"GCW",f:parsenoop},188:{n:"ShrFmla",f:parsenoop},194:{n:"AddMenu",f:parsenoop},195:{n:"DelMenu",f:parsenoop},214:{n:"RString",f:parsenoop},223:{n:"UDDesc",f:parsenoop},234:{n:"TabIdConf",f:parsenoop},354:{n:"XL5Modify",f:parsenoop},421:{n:"FileSharing2",f:parsenoop},536:{n:"Name",f:parsenoop},547:{n:"ExternName",f:parse_ExternName},561:{n:"Font",f:parsenoop},1030:{n:"Formula",f:parse_Formula},2157:{n:"FeatInfo",f:parsenoop},2163:{n:"FeatInfo11",f:parsenoop},2177:{n:"SXAddl12",f:parsenoop},2240:{n:"AutoWebPub",f:parsenoop},2241:{n:"ListObj",f:parsenoop},2242:{n:"ListField",f:parsenoop},2243:{n:"ListDV",f:parsenoop},2244:{n:"ListCondFmt",f:parsenoop},2245:{n:"ListCF",f:parsenoop},2246:{n:"FMQry",f:parsenoop},2247:{n:"FMSQry",f:parsenoop},2248:{n:"PLV",f:parsenoop},2249:{n:"LnExt",f:parsenoop},2250:{n:"MkrExt",f:parsenoop},2251:{n:"CrtCoopt",f:parsenoop},0:{}};function parse_ods(zip,opts){if(typeof module!=="undefined"&&typeof require!=="undefined"&&typeof ODS==="undefined")ODS=require("./od"+"s");if(typeof ODS==="undefined"||!ODS.parse_ods)throw new Error("Unsupported ODS");return ODS.parse_ods(zip,opts)}function fix_opts_func(defaults){return function fix_opts(opts){for(var i=0;i!=defaults.length;++i){var d=defaults[i];if(opts[d[0]]===undefined)opts[d[0]]=d[1];if(d[2]==="n")opts[d[0]]=Number(opts[d[0]])}}}var fix_read_opts=fix_opts_func([["cellNF",false],["cellHTML",true],["cellFormula",true],["cellStyles",false],["cellDates",false],["sheetStubs",false],["sheetRows",0,"n"],["bookDeps",false],["bookSheets",false],["bookProps",false],["bookFiles",false],["bookVBA",false],["password",""],["WTF",false]]);var fix_write_opts=fix_opts_func([["cellDates",false],["bookSST",false],["bookType","xlsx"],["WTF",false]]);function safe_parse_wbrels(wbrels,sheets){if(!wbrels)return 0;try{wbrels=sheets.map(function pwbr(w){return[w.name,wbrels["!id"][w.id].Target]})}catch(e){return null}return!wbrels||wbrels.length===0?null:wbrels}function safe_parse_ws(zip,path,relsPath,sheet,sheetRels,sheets,opts){try{sheetRels[sheet]=parse_rels(getzipdata(zip,relsPath,true),path);sheets[sheet]=parse_ws(getzipdata(zip,path),path,opts,sheetRels[sheet])}catch(e){if(opts.WTF)throw e}}var nodirs=function nodirs(x){return x.substr(-1)!="/"};function parse_zip(zip,opts){make_ssf(SSF);opts=opts||{};fix_read_opts(opts);reset_cp();if(safegetzipfile(zip,"META-INF/manifest.xml"))return parse_ods(zip,opts);var entries=keys(zip.files).filter(nodirs).sort();var dir=parse_ct(getzipdata(zip,"[Content_Types].xml"),opts);var xlsb=false;var sheets,binname;if(dir.workbooks.length===0){binname="xl/workbook.xml";if(getzipdata(zip,binname,true))dir.workbooks.push(binname)}if(dir.workbooks.length===0){binname="xl/workbook.bin";if(!getzipfile(zip,binname,true))throw new Error("Could not find workbook");dir.workbooks.push(binname);xlsb=true}if(dir.workbooks[0].substr(-3)=="bin")xlsb=true;if(xlsb)set_cp(1200);if(!opts.bookSheets&&!opts.bookProps){strs=[];if(dir.sst)strs=parse_sst(getzipdata(zip,dir.sst.replace(/^\//,"")),dir.sst,opts);styles={};if(dir.style)styles=parse_sty(getzipdata(zip,dir.style.replace(/^\//,"")),dir.style,opts);themes={};if(opts.cellStyles&&dir.themes.length)themes=parse_theme(getzipdata(zip,dir.themes[0].replace(/^\//,""),true),dir.themes[0],opts)}var wb=parse_wb(getzipdata(zip,dir.workbooks[0].replace(/^\//,"")),dir.workbooks[0],opts);var props={},propdata="";if(dir.coreprops.length!==0){propdata=getzipdata(zip,dir.coreprops[0].replace(/^\//,""),true);if(propdata)props=parse_core_props(propdata);if(dir.extprops.length!==0){propdata=getzipdata(zip,dir.extprops[0].replace(/^\//,""),true);if(propdata)parse_ext_props(propdata,props)}}var custprops={};if(!opts.bookSheets||opts.bookProps){if(dir.custprops.length!==0){propdata=getzipdata(zip,dir.custprops[0].replace(/^\//,""),true);if(propdata)custprops=parse_cust_props(propdata,opts)}}var out={};if(opts.bookSheets||opts.bookProps){if(props.Worksheets&&props.SheetNames.length>0)sheets=props.SheetNames;else if(wb.Sheets)sheets=wb.Sheets.map(function pluck(x){return x.name});if(opts.bookProps){out.Props=props;out.Custprops=custprops}if(typeof sheets!=="undefined")out.SheetNames=sheets;if(opts.bookSheets?out.SheetNames:opts.bookProps)return out}sheets={};var deps={};if(opts.bookDeps&&dir.calcchain)deps=parse_cc(getzipdata(zip,dir.calcchain.replace(/^\//,"")),dir.calcchain,opts);var i=0;var sheetRels={};var path,relsPath;if(!props.Worksheets){var wbsheets=wb.Sheets;props.Worksheets=wbsheets.length;props.SheetNames=[];for(var j=0;j!=wbsheets.length;++j){props.SheetNames[j]=wbsheets[j].name}}var wbext=xlsb?"bin":"xml";var wbrelsfile="xl/_rels/workbook."+wbext+".rels";var wbrels=parse_rels(getzipdata(zip,wbrelsfile,true),wbrelsfile);if(wbrels)wbrels=safe_parse_wbrels(wbrels,wb.Sheets);var nmode=getzipdata(zip,"xl/worksheets/sheet.xml",true)?1:0;for(i=0;i!=props.Worksheets;++i){if(wbrels)path="xl/"+wbrels[i][1].replace(/[\/]?xl\//,"");else{path="xl/worksheets/sheet"+(i+1-nmode)+"."+wbext;path=path.replace(/sheet0\./,"sheet.")}relsPath=path.replace(/^(.*)(\/)([^\/]*)$/,"$1/_rels/$3.rels");safe_parse_ws(zip,path,relsPath,props.SheetNames[i],sheetRels,sheets,opts)}if(dir.comments)parse_comments(zip,dir.comments,sheets,sheetRels,opts);out={Directory:dir,Workbook:wb,Props:props,Custprops:custprops,Deps:deps,Sheets:sheets,SheetNames:props.SheetNames,Strings:strs,Styles:styles,Themes:themes,SSF:SSF.get_table()};if(opts.bookFiles){out.keys=entries;out.files=zip.files}if(opts.bookVBA){if(dir.vba.length>0)out.vbaraw=getzipdata(zip,dir.vba[0],true);else if(dir.defaults.bin==="application/vnd.ms-office.vbaProject")out.vbaraw=getzipdata(zip,"xl/vbaProject.bin",true)}return out}function add_rels(rels,rId,f,type,relobj){if(!relobj)relobj={};if(!rels["!id"])rels["!id"]={};relobj.Id="rId"+rId;relobj.Type=type;relobj.Target=f;if(rels["!id"][relobj.Id])throw new Error("Cannot rewrite rId "+rId);rels["!id"][relobj.Id]=relobj;rels[("/"+relobj.Target).replace("//","/")]=relobj}function write_zip(wb,opts){if(wb&&!wb.SSF){wb.SSF=SSF.get_table()}if(wb&&wb.SSF){make_ssf(SSF);SSF.load_table(wb.SSF);opts.revssf=evert_num(wb.SSF);opts.revssf[wb.SSF[65535]]=0}opts.rels={};opts.wbrels={};opts.Strings=[];opts.Strings.Count=0;opts.Strings.Unique=0;var wbext=opts.bookType=="xlsb"?"bin":"xml";var ct={workbooks:[],sheets:[],calcchains:[],themes:[],styles:[],coreprops:[],extprops:[],custprops:[],strs:[],comments:[],vba:[],TODO:[],rels:[],xmlns:""};fix_write_opts(opts=opts||{});var zip=new jszip;var f="",rId=0;opts.cellXfs=[];get_cell_style(opts.cellXfs,{},{revssf:{General:0}});f="docProps/core.xml";zip.file(f,write_core_props(wb.Props,opts));ct.coreprops.push(f);add_rels(opts.rels,2,f,RELS.CORE_PROPS);f="docProps/app.xml";if(!wb.Props)wb.Props={};wb.Props.SheetNames=wb.SheetNames;wb.Props.Worksheets=wb.SheetNames.length;zip.file(f,write_ext_props(wb.Props,opts));ct.extprops.push(f);add_rels(opts.rels,3,f,RELS.EXT_PROPS);if(wb.Custprops!==wb.Props&&keys(wb.Custprops||{}).length>0){f="docProps/custom.xml";zip.file(f,write_cust_props(wb.Custprops,opts));ct.custprops.push(f);add_rels(opts.rels,4,f,RELS.CUST_PROPS)}f="xl/workbook."+wbext;zip.file(f,write_wb(wb,f,opts));ct.workbooks.push(f);add_rels(opts.rels,1,f,RELS.WB);for(rId=1;rId<=wb.SheetNames.length;++rId){f="xl/worksheets/sheet"+rId+"."+wbext;zip.file(f,write_ws(rId-1,f,opts,wb));ct.sheets.push(f);add_rels(opts.wbrels,rId,"worksheets/sheet"+rId+"."+wbext,RELS.WS)}if(opts.Strings!=null&&opts.Strings.length>0){f="xl/sharedStrings."+wbext;zip.file(f,write_sst(opts.Strings,f,opts));ct.strs.push(f);add_rels(opts.wbrels,++rId,"sharedStrings."+wbext,RELS.SST)}f="xl/theme/theme1.xml";zip.file(f,write_theme());ct.themes.push(f);add_rels(opts.wbrels,++rId,"theme/theme1.xml",RELS.THEME);f="xl/styles."+wbext;zip.file(f,write_sty(wb,f,opts));ct.styles.push(f);add_rels(opts.wbrels,++rId,"styles."+wbext,RELS.STY);zip.file("[Content_Types].xml",write_ct(ct,opts));zip.file("_rels/.rels",write_rels(opts.rels));zip.file("xl/_rels/workbook."+wbext+".rels",write_rels(opts.wbrels));return zip}function firstbyte(f,o){switch((o||{}).type||"base64"){case"buffer":return f[0];case"base64":return Base64.decode(f.substr(0,12)).charCodeAt(0);case"binary":return f.charCodeAt(0);case"array":return f[0];default:throw new Error("Unrecognized type "+o.type)}}function read_zip(data,opts){var zip,d=data;var o=opts||{};if(!o.type)o.type=has_buf&&Buffer.isBuffer(data)?"buffer":"base64";switch(o.type){case"base64":zip=new jszip(d,{base64:true});break;case"binary":case"array":zip=new jszip(d,{base64:false});break;case"buffer":zip=new jszip(d);break;case"file":zip=new jszip(d=_fs.readFileSync(data));break;default:throw new Error("Unrecognized type "+o.type)}return parse_zip(zip,o)}function readSync(data,opts){var zip,d=data,isfile=false,n;var o=opts||{};if(!o.type)o.type=has_buf&&Buffer.isBuffer(data)?"buffer":"base64";if(o.type=="file"){isfile=true;o.type="buffer";d=_fs.readFileSync(data)}switch(n=firstbyte(d,o)){case 208:if(isfile)o.type="file";return parse_xlscfb(CFB.read(data,o),o);case 9:return parse_xlscfb(s2a(o.type==="base64"?Base64.decode(data):data),o);case 60:return parse_xlml(d,o);case 80:if(isfile)o.type="file";return read_zip(data,opts);default:throw new Error("Unsupported file "+n)}}function readFileSync(data,opts){var o=opts||{};o.type="file";return readSync(data,o)}function write_zip_type(wb,opts){var o=opts||{};var z=write_zip(wb,o);switch(o.type){case"base64":return z.generate({type:"base64"});case"binary":return z.generate({type:"string"});case"buffer":return z.generate({type:"nodebuffer"});case"file":return _fs.writeFileSync(o.file,z.generate({type:"nodebuffer"}));default:throw new Error("Unrecognized type "+o.type)}}function writeSync(wb,opts){var o=opts||{};switch(o.bookType){case"xml":return write_xlml(wb,o);default:return write_zip_type(wb,o)}}function writeFileSync(wb,filename,opts){var o=opts||{};o.type="file";o.file=filename;switch(o.file.substr(-5).toLowerCase()){case".xlsx":o.bookType="xlsx";break;case".xlsm":o.bookType="xlsm";break;case".xlsb":o.bookType="xlsb";break;default:switch(o.file.substr(-4).toLowerCase()){case".xls":o.bookType="xls";break;case".xml":o.bookType="xml";break}}return writeSync(wb,o)}function decode_row(rowstr){return parseInt(unfix_row(rowstr),10)-1}function encode_row(row){return""+(row+1)}function fix_row(cstr){return cstr.replace(/([A-Z]|^)(\d+)$/,"$1$$$2")}function unfix_row(cstr){return cstr.replace(/\$(\d+)$/,"$1")}function decode_col(colstr){var c=unfix_col(colstr),d=0,i=0;for(;i!==c.length;++i)d=26*d+c.charCodeAt(i)-64;return d-1}function encode_col(col){var s="";for(++col;col;col=Math.floor((col-1)/26))s=String.fromCharCode((col-1)%26+65)+s;return s}function fix_col(cstr){return cstr.replace(/^([A-Z])/,"$$$1")}function unfix_col(cstr){return cstr.replace(/^\$([A-Z])/,"$1")}function split_cell(cstr){return cstr.replace(/(\$?[A-Z]*)(\$?\d*)/,"$1,$2").split(",")}function decode_cell(cstr){var splt=split_cell(cstr);return{c:decode_col(splt[0]),r:decode_row(splt[1])}}function encode_cell(cell){return encode_col(cell.c)+encode_row(cell.r)}function fix_cell(cstr){return fix_col(fix_row(cstr))}function unfix_cell(cstr){return unfix_col(unfix_row(cstr))}function decode_range(range){var x=range.split(":").map(decode_cell);return{s:x[0],e:x[x.length-1]}}function encode_range(cs,ce){if(ce===undefined||typeof ce==="number")return encode_range(cs.s,cs.e);if(typeof cs!=="string")cs=encode_cell(cs);if(typeof ce!=="string")ce=encode_cell(ce);return cs==ce?cs:cs+":"+ce}function safe_decode_range(range){var o={s:{c:0,r:0},e:{c:0,r:0}};var idx=0,i=0,cc=0;var len=range.length;for(idx=0;i<len;++i){if((cc=range.charCodeAt(i)-64)<1||cc>26)break;idx=26*idx+cc}o.s.c=--idx;for(idx=0;i<len;++i){if((cc=range.charCodeAt(i)-48)<0||cc>9)break;idx=10*idx+cc}o.s.r=--idx;if(i===len||range.charCodeAt(++i)===58){o.e.c=o.s.c;o.e.r=o.s.r;return o}for(idx=0;i!=len;++i){if((cc=range.charCodeAt(i)-64)<1||cc>26)break;idx=26*idx+cc}o.e.c=--idx;for(idx=0;i!=len;++i){if((cc=range.charCodeAt(i)-48)<0||cc>9)break;idx=10*idx+cc}o.e.r=--idx;return o}function safe_format_cell(cell,v){if(cell.z!==undefined)try{return cell.w=SSF.format(cell.z,v)}catch(e){}if(!cell.XF)return v;try{return cell.w=SSF.format(cell.XF.ifmt||0,v)}catch(e){return""+v}}function format_cell(cell,v){if(cell==null||cell.t==null)return"";if(cell.w!==undefined)return cell.w;if(v===undefined)return safe_format_cell(cell,cell.v);return safe_format_cell(cell,v)}function sheet_to_json(sheet,opts){var val,row,range,header=0,offset=1,r,hdr=[],isempty,R,C,v;var o=opts!=null?opts:{};var raw=o.raw;if(sheet==null||sheet["!ref"]==null)return[];range=o.range!==undefined?o.range:sheet["!ref"];if(o.header===1)header=1;else if(o.header==="A")header=2;else if(Array.isArray(o.header))header=3;switch(typeof range){case"string":r=safe_decode_range(range);break;case"number":r=safe_decode_range(sheet["!ref"]);r.s.r=range;break;default:r=range}if(header>0)offset=0;var rr=encode_row(r.s.r);var cols=new Array(r.e.c-r.s.c+1);var out=new Array(r.e.r-r.s.r-offset+1);var outi=0;for(C=r.s.c;C<=r.e.c;++C){cols[C]=encode_col(C);val=sheet[cols[C]+rr];switch(header){case 1:hdr[C]=C;break;case 2:hdr[C]=cols[C];break;case 3:hdr[C]=o.header[C-r.s.c];break;default:if(val===undefined)continue;hdr[C]=format_cell(val)}}for(R=r.s.r+offset;R<=r.e.r;++R){rr=encode_row(R);isempty=true;if(header===1)row=[];else{row={};if(Object.defineProperty)Object.defineProperty(row,"__rowNum__",{value:R,enumerable:false});else row.__rowNum__=R}for(C=r.s.c;C<=r.e.c;++C){val=sheet[cols[C]+rr];if(val===undefined||val.t===undefined)continue;v=val.v;switch(val.t){case"e":continue;case"s":break;case"b":case"n":break;default:throw"unrecognized type "+val.t}if(v!==undefined){row[hdr[C]]=raw?v:format_cell(val,v);isempty=false}}if(isempty===false||header===1)out[outi++]=row}out.length=outi;return out}function sheet_to_row_object_array(sheet,opts){return sheet_to_json(sheet,opts!=null?opts:{})}function sheet_to_csv(sheet,opts){var out="",txt="",qreg=/"/g;var o=opts==null?{}:opts;if(sheet==null||sheet["!ref"]==null)return"";var r=safe_decode_range(sheet["!ref"]);var FS=o.FS!==undefined?o.FS:",",fs=FS.charCodeAt(0);var RS=o.RS!==undefined?o.RS:"\n",rs=RS.charCodeAt(0);var row="",rr="",cols=[];var i=0,cc=0,val;var R=0,C=0;for(C=r.s.c;C<=r.e.c;++C)cols[C]=encode_col(C);for(R=r.s.r;R<=r.e.r;++R){row="";rr=encode_row(R);for(C=r.s.c;C<=r.e.c;++C){val=sheet[cols[C]+rr];txt=val!==undefined?""+format_cell(val):"";for(i=0,cc=0;i!==txt.length;++i)if((cc=txt.charCodeAt(i))===fs||cc===rs||cc===34){txt='"'+txt.replace(qreg,'""')+'"';break}row+=(C===r.s.c?"":FS)+txt}out+=row+RS}return out}var make_csv=sheet_to_csv;function sheet_to_formulae(sheet){var cmds,y="",x,val="";if(sheet==null||sheet["!ref"]==null)return"";var r=safe_decode_range(sheet["!ref"]),rr="",cols=[],C;cmds=new Array((r.e.r-r.s.r+1)*(r.e.c-r.s.c+1));var i=0;for(C=r.s.c;C<=r.e.c;++C)cols[C]=encode_col(C);for(var R=r.s.r;R<=r.e.r;++R){rr=encode_row(R);for(C=r.s.c;C<=r.e.c;++C){y=cols[C]+rr;x=sheet[y];val="";if(x===undefined)continue;if(x.f!=null)val=x.f;else if(x.w!==undefined)val="'"+x.w;else if(x.v===undefined)continue;else val=""+x.v;cmds[i++]=y+"="+val}}cmds.length=i;return cmds}var utils={encode_col:encode_col,encode_row:encode_row,encode_cell:encode_cell,encode_range:encode_range,decode_col:decode_col,decode_row:decode_row,split_cell:split_cell,decode_cell:decode_cell,decode_range:decode_range,format_cell:format_cell,get_formulae:sheet_to_formulae,make_csv:sheet_to_csv,make_json:sheet_to_json,make_formulae:sheet_to_formulae,sheet_to_csv:sheet_to_csv,sheet_to_json:sheet_to_json,sheet_to_formulae:sheet_to_formulae,sheet_to_row_object_array:sheet_to_row_object_array};XLSX.parse_xlscfb=parse_xlscfb;XLSX.parse_zip=parse_zip;XLSX.read=readSync;XLSX.readFile=readFileSync;XLSX.readFileSync=readFileSync;XLSX.write=writeSync;XLSX.writeFile=writeFileSync;XLSX.writeFileSync=writeFileSync;XLSX.utils=utils;XLSX.CFB=CFB;XLSX.SSF=SSF})(typeof exports!=="undefined"?exports:XLSX);var XLS=XLSX;
+var Util = {
+  $: function() {
+    var elements = new Array();
+    for (var i = 0; i < arguments.length; i++) {
+      var element = arguments[i];
+      if (typeof element == 'string')
+        element = document.getElementById(element);
+      if (arguments.length == 1)
+        return element;
+      elements.push(element);
+    }
+    return elements;
+  }
+};
+
+Element.prototype.createChild = function (tag, param, innerHTML) {
+  var element = document.createElement(tag);
+  this.appendChild(element);
+  if (param) {
+    for (key in param) {
+      element.setAttribute(key, param[key]);
+    }
+  }
+  if (innerHTML) {
+    element.innerHTML = innerHTML;
+  }
+
+  return element;
+};
+
+Element.prototype.hasClassName = function (a) {
+  return new RegExp("(?:^|\\s+)" + a + "(?:\\s+|$)").test(this.className);
+}
+
+Element.prototype.addClassName = function (a) {
+  if (!this.hasClassName(a)) {
+    this.className = [this.className, a].join(" ");
+  }
+}
+
+Element.prototype.removeClassName = function (b) {
+  if (this.hasClassName(b)) {
+    var a = this.className;
+    this.className = a.replace(new RegExp("(?:^|\\s+)" + b + "(?:\\s+|$)", "g"), " ");
+  }
+}
+
+Element.prototype.getStyle = function(key) {
+  var style = this.getAttribute("style");
+  if (style != null && style.trim().length > 0) {
+    var keyValuePairs = style.split(";");
+    for (var i = 0; i < keyValuePairs.length && keyValuePairs[i].trim().length > 0; i++) {
+      var keyAndValue = keyValuePairs[i].split(":");
+      if (keyAndValue.length != 2) {
+        continue;
+      }
+      if (key == keyAndValue[0].trim()) {
+        return keyAndValue[1].trim();
+      }
+    }
+  }
+  return null;
+};
+
+Element.prototype.updateStyle = function(key, value) {
+  var oldStyle = this.getAttribute("style");
+  var keyExisting = false;
+  var newStyle = "";
+  if (oldStyle != null && oldStyle.trim().length > 0) {
+    var keyValuePairs = oldStyle.split(";");
+    for (var i = 0; i < keyValuePairs.length && keyValuePairs[i].trim().length > 0; i++) {
+      var keyAndValue = keyValuePairs[i].split(":");
+      if (keyAndValue.length != 2) {
+        continue;
+      }
+      if (key == keyAndValue[0].trim()) {
+        //apply new value to the key
+        keyExisting = true;
+        if (value != null) {
+          newStyle += key + ": " + value + "; ";
+        } else {
+          //the value is set as null
+        }
+      } else {
+        //other style key and value
+        newStyle += keyAndValue[0].trim() + ": " + keyAndValue[1].trim() + "; ";
+      }
+    }
+  }
+  if (!keyExisting) {
+    //append to the end
+    newStyle += key + ": " + value + "; ";
+  }
+  this.setAttribute("style", newStyle)
+};
+
+String.prototype.format = function() {
+  var args = arguments;
+  return this.replace(/\{(\d+)\}/g,
+    function(m, i) {
+      return args[i];
+    });
+};if (!Array.prototype.findIndex) {
+  Array.prototype.findIndex = function(predicate) {
+    'use strict';
+    if (this == null) {
+      throw new TypeError('Array.prototype.findIndex called on null or undefined');
+    }
+    if (typeof predicate !== 'function') {
+      throw new TypeError('predicate must be a function');
+    }
+    var list = Object(this);
+    var length = list.length >>> 0;
+    var thisArg = arguments[1];
+    var value;
+
+    for (var i = 0; i < length; i++) {
+      value = list[i];
+      if (predicate.call(thisArg, value, i, list)) {
+        return i;
+      }
+    }
+    return -1;
+  };
+}
+
+// Production steps of ECMA-262, Edition 5, 15.4.4.18
+// Reference: http://es5.github.io/#x15.4.4.18
+if (!Array.prototype.forEach) {
+
+  Array.prototype.forEach = function(callback, thisArg) {
+
+    var T, k;
+
+    if (this === null) {
+      throw new TypeError(' this is null or not defined');
+    }
+
+    // 1. Let O be the result of calling toObject() passing the
+    // |this| value as the argument.
+    var O = Object(this);
+
+    // 2. Let lenValue be the result of calling the Get() internal
+    // method of O with the argument "length".
+    // 3. Let len be toUint32(lenValue).
+    var len = O.length >>> 0;
+
+    // 4. If isCallable(callback) is false, throw a TypeError exception. 
+    // See: http://es5.github.com/#x9.11
+    if (typeof callback !== "function") {
+      throw new TypeError(callback + ' is not a function');
+    }
+
+    // 5. If thisArg was supplied, let T be thisArg; else let
+    // T be undefined.
+    if (arguments.length > 1) {
+      T = thisArg;
+    }
+
+    // 6. Let k be 0
+    k = 0;
+
+    // 7. Repeat, while k < len
+    while (k < len) {
+
+      var kValue;
+
+      // a. Let Pk be ToString(k).
+      //    This is implicit for LHS operands of the in operator
+      // b. Let kPresent be the result of calling the HasProperty
+      //    internal method of O with argument Pk.
+      //    This step can be combined with c
+      // c. If kPresent is true, then
+      if (k in O) {
+
+        // i. Let kValue be the result of calling the Get internal
+        // method of O with argument Pk.
+        kValue = O[k];
+
+        // ii. Call the Call internal method of callback with T as
+        // the this value and argument list containing kValue, k, and O.
+        callback.call(T, kValue, k, O);
+      }
+      // d. Increase k by 1.
+      k++;
+    }
+    // 8. return undefined
+  };
+}function ExcelApp() {
+  // Data
+  this.wbData = null;
+  this.dataSheets = [];
+
+  // Sub collections
+  this.wbSub = null;
+  this.subCollections = [];
+
+  // Sheet array
+  this.sheetInfo = null;
+  this.sheetArray = null;
+
+  // Dom objects
+  this.dataTitleDom = null;
+  this.subTitleDom = null;
+  this.dataDropDom = null;
+  this.subDropDom = null;
+  this.actionContainerDOM = null;
+  this.sheetSelectorDOM = null;
+  this.columnSelectorDOM = null;
+  this.rowSelectorDOM = null;
+  this.processButton = null;
+  this.exportButton = null;
+  this.tableContainerDom = null;
+  this.outputTableDom = null;
+};
+
+ExcelApp.prototype = {
+  binaryToWorkbook: function(binary) {
+    // If binary string, read with type 'binary'
+    var workbook = XLSX.read(binary, {
+      type: 'binary'
+    });
+
+    return workbook;
+  },
+
+  getWorkbook: function(file, onComplete) {
+    var that = this;
+    var reader = new FileReader();
+
+    if (reader.readAsBinaryString) {
+      reader.onload = function(e) {
+        var data = e.target.result;
+        var workbook = that.binaryToWorkbook(data);
+        onComplete(workbook);
+      };
+      reader.readAsBinaryString(file);
+    } else {
+      // For IE0/11, use readAsArrayBuffer() instead
+      reader.onload = function(e) {
+        var data = "";
+        var bytes = new Uint8Array(e.target.result);
+        var length = bytes.byteLength;
+        for (var i = 0; i < length; i++) {
+            data += String.fromCharCode(bytes[i]);
+        }
+        var workbook = that.binaryToWorkbook(data);
+        onComplete(workbook);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+  },
+
+  getCellInfo: function(cellName) {
+    var regx = /([A-Z]+)([0-9]+)/;
+    var group = cellName.match(regx);
+    return {
+      row: group[2],
+      col: group[1]
+    };
+  },
+
+  getSheetInfo: function(worksheet) {
+    var colKeys = [];
+    var rowKeys = [];
+
+    var colObj = {};
+    var rowObj = {};
+
+    // Get the array of column and row names
+    for (var cellKey in worksheet) {
+      if (cellKey[0] === '!') {
+        continue
+      };
+      var info = this.getCellInfo(cellKey);
+
+      // Check the column: "A-Z"
+      if (!colObj[info.col]) {
+        colObj[info.col] = true;
+        colKeys.push(info.col);
+      }
+
+      // Check the row: "0-9"
+      if (!rowObj[info.row]) {
+        rowObj[info.row] = true;
+        rowKeys.push(info.row);
+      }
+    }
+
+    return {
+      colKeys: colKeys,
+      rowKeys: rowKeys
+    }; 
+  },
+
+  sheetToArray: function(worksheet) {
+    var sheetArray = [];
+
+    var sheetInfo = this.getSheetInfo(worksheet);
+    var colKeys = sheetInfo.colKeys;
+    var rowKeys = sheetInfo.rowKeys;
+
+    // Init the array
+    for (var row = 0; row < rowKeys.length; row ++) {
+      var rowArray = [];
+      for (var col = 0; col < colKeys.length; col ++) {
+        var colKey = colKeys[col] + rowKeys[row];
+        if (worksheet[colKey]) {
+          rowArray.push(worksheet[colKey].v);
+        } else {
+          rowArray.push('');
+        }
+        
+      }
+      sheetArray.push(rowArray);
+    }
+
+    return {
+      rowKeys: rowKeys,
+      colKeys: colKeys,
+      sheetArray: sheetArray
+    };
+  },
+
+  renderColumnSelect: function(sheetInfo) {
+    var that = this;
+
+    // Render the column select
+    if (this.columnSelectorDOM) {
+      while (this.columnSelectorDOM.options.length > 0) {
+        this.columnSelectorDOM.remove(0);
+      }
+      this.columnSelectorDOM.selectedIndex = 0;
+    } else {
+      this.actionContainerDOM.createChild('span', {}, 'WHERE column ');
+      this.columnSelectorDOM = this.actionContainerDOM.createChild('select');
+      this.actionContainerDOM.createChild('span', {}, ' is in the sub collections ');
+    }
+
+    // Render the column options
+    var colKeys = sheetInfo.colKeys;
+    colKeys.forEach(function(colKey) {
+      that.columnSelectorDOM.createChild('option', {
+        value: colKey
+      }, colKey);
+    });
+  },
+
+  renderRowSelect: function(sheetInfo) {
+    var that = this;
+
+    // Render the row select
+    if (this.rowSelectorDOM) {
+      while (this.rowSelectorDOM.options.length > 0) {
+        this.rowSelectorDOM.remove(0);
+      }
+      this.rowSelectorDOM.selectedIndex = 0;
+    } else {
+      this.actionContainerDOM.createChild('span', {}, 'WITH row ');
+      this.rowSelectorDOM = this.actionContainerDOM.createChild('select');
+      this.actionContainerDOM.createChild('span', {}, ' as the export header.');
+    }
+
+    // Render the column options
+    var rowKeys = sheetInfo.rowKeys;
+    rowKeys.forEach(function(rowKey) {
+      that.rowSelectorDOM.createChild('option', {
+        value: rowKey
+      }, rowKey);
+    });
+  },
+
+  renderSheetSelect: function(workbook) {
+    var that = this;
+    function sheetSelectChange() {
+      var select = that.sheetSelectorDOM;
+      var selectedSheetName = select.options[select.selectedIndex].value;
+      var worksheet = that.wbData.Sheets[selectedSheetName];
+
+      // Render the row and col selection
+      var sheetInfo = that.getSheetInfo(worksheet);
+      that.renderColumnSelect(sheetInfo);
+      that.renderRowSelect(sheetInfo);
+    };
+
+    // Render the sheet select
+    if (this.sheetSelectorDOM) {
+      while (this.sheetSelectorDOM.options.length > 0) {
+        this.sheetSelectorDOM.remove(0);
+      }
+      this.sheetSelectorDOM.selectedIndex = 0;
+    } else {
+      this.actionContainerDOM.createChild('span', {}, 'SELECT rows from sheet ');
+      this.sheetSelectorDOM = this.actionContainerDOM.createChild('select');
+      this.sheetSelectorDOM.addEventListener('change', sheetSelectChange, false);
+    }
+
+    // Render the sheet options
+    workbook.SheetNames.forEach(function(sheetName) {
+      that.sheetSelectorDOM.createChild('option', {
+        value: sheetName
+      }, sheetName);
+    });
+
+    // Trigger the sheet change
+    sheetSelectChange();
+  },
+
+  readData: function(file) {
+    var that = this;
+
+    this.getWorkbook(file, function(workbook) {
+      that.wbData = workbook;
+      that.dataSheets = workbook.SheetNames;
+
+      // Data read complete
+      that.dataDropDom.addClassName('dropped');
+      that.dataDropDom.innerHTML = 'Data Sheets: ' + that.dataSheets.join(', ');
+
+      // Render the sheet select
+      that.renderSheetSelect(workbook);
+
+      that.enableProcessButton();
+    });
+  },
+
+  readSub: function(file) {
+    var that = this;
+    this.getWorkbook(file, function(workbook) {
+      that.wbSub = workbook;
+      that.subCollections = [];
+
+      // Read the sub collections
+      var sheets = workbook.SheetNames;
+      sheets.forEach(function(y) {
+        var worksheet = workbook.Sheets[y];
+        for (var z in worksheet) {
+          if (z[0] === '!') continue;
+          //console.log(y + "!" + z + "=" + JSON.stringify(worksheet[z].v));
+          that.subCollections.push(worksheet[z].v);
+        }
+      });
+
+      // Sub read complete
+      that.subDropDom.addClassName('dropped');
+      that.subDropDom.innerHTML = 'Sub Collections: ' + that.subCollections.join(', ');
+      that.enableProcessButton();
+    });
+  },
+
+  render: function(dom) {
+    var header = dom.createChild('div', {
+      class: 'section'
+    }, 'Supported File Types: [XLSX / XLSM / XLSB / ODS / XLS / XML] - Sample Files:[');
+    header.createChild('a', {
+      href: 'ProjectTracker.xlsx'
+    }, 'Data');
+    header.createChild('span', null, ', ');
+    header.createChild('a', {
+      href: 'ProjectSubList.xlsx'
+    }, 'Sub Collection');
+    header.createChild('span', null, ']');
+
+    // Data
+    var dataSection = dom.createChild('div', {
+      class: 'section'
+    });
+    var dataTitle = dataSection.createChild('div', {
+      class: 'title'
+    }, 'Data: ');
+    this.dataTitleDom = dataTitle.createChild('span', {
+      class: 'file-name'
+    });
+    this.dataDropDom = dataSection.createChild('div', {
+      class: 'drop'
+    }, 'Drop a file here');
+
+    // Select container
+    this.actionContainerDOM = dom.createChild('div', {
+      class: 'section actions'
+    });
+
+    // Sub
+    var subSection = dom.createChild('div', {
+      class: 'section'
+    });
+    var subTitle = subSection.createChild('div', {
+      class: 'title'
+    }, 'Sub Collection: ');
+    this.subTitleDom = subTitle.createChild('span', {
+      class: 'file-name'
+    });
+    this.subDropDom = subSection.createChild('div', {
+      class: 'drop'
+    }, 'Drop a file here');
+
+    // Output
+    var outSection = dom.createChild('div', {
+      class: 'section'
+    });
+    outSection.createChild('div', {
+      class: 'title'
+    }, 'Output:');
+    this.tableContainerDom = dom.createChild('div', {
+      class: 'section output'
+    });
+
+    // Bind the drop handlers
+    this.bindDrop();
+  },
+
+  bindDrop: function() {
+    var that = this;
+
+    function handleDragover(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+    }
+
+    this.dataDropDom.addEventListener('dragenter', handleDragover, false);
+    this.dataDropDom.addEventListener('dragover', handleDragover, false);
+    this.dataDropDom.addEventListener('drop', function(e) {
+      that.acceptDropFile(e, true);
+    }, false);
+
+    this.subDropDom.addEventListener('dragenter', handleDragover, false);
+    this.subDropDom.addEventListener('dragover', handleDragover, false);
+    this.subDropDom.addEventListener('drop', function(e) {
+      that.acceptDropFile(e, false);
+    }, false);
+  },
+
+  acceptDropFile: function(e, isData) {
+    var that = this;
+
+    e.stopPropagation();
+    e.preventDefault();
+    var files = e.dataTransfer.files;
+    // for (i = 0, f = files[i]; i != files.length; ++i) {
+    if (files.length <= 0) {
+      return;
+    }
+
+    var file = files[0];
+    if (isData) {
+      this.dataTitleDom.innerHTML = file.name;
+      this.readData(file)
+    } else {
+      this.subTitleDom.innerHTML = file.name;
+      this.readSub(file)
+    }
+  },
+
+  enableProcessButton: function() {
+    var that = this;
+
+    if (!this.wbData || !this.wbSub) {
+      return;
+    }
+
+    if (!this.processButton) {
+      this.processButton = this.actionContainerDOM.createChild('input', {
+        type: 'button',
+        value: 'Process',
+        class: 'action-button'
+      });
+      this.processButton.addEventListener('click', function() {
+        that.processData();
+      }, false);
+    }
+  },
+
+  processData: function() {
+    var sheetName = this.sheetSelectorDOM.options[this.sheetSelectorDOM.selectedIndex].value;
+    var colKey = this.columnSelectorDOM.options[this.columnSelectorDOM.selectedIndex].value;
+    var rowKey = this.rowSelectorDOM.options[this.rowSelectorDOM.selectedIndex].value;
+
+    var subCollections = this.subCollections;
+    var worksheet = this.wbData.Sheets[sheetName];
+
+    // Get the sheet as array
+    var array = this.sheetToArray(worksheet);
+    var rowKeys = array.rowKeys;
+    var colKeys = array.colKeys;
+    var sheetArray = array.sheetArray;
+
+    // Get the selected column and row index
+    var colIndex = colKeys.findIndex(function(item) {
+      return item === colKey;
+    });
+    var rowIndex = rowKeys.findIndex(function(item) {
+      return item === rowKey;
+    });
+
+    var exportRows = [];
+
+    // Add the header row
+    exportRows.push(sheetArray[rowIndex]);
+
+    // Go through the collection
+    subCollections.forEach(function(item, index) {
+      for (var i = 0; i< sheetArray.length; i++) {
+        if (sheetArray[i][colIndex] === item) {
+          exportRows.push(sheetArray[i]);
+        }
+      }
+    });
+
+    this.renderTable(exportRows);
+  },
+
+  renderTable: function(dataToExport) {
+    // Render table
+    if (this.outputTableDom) {
+      this.tableContainerDom.removeChild(this.outputTableDom);
+    }
+
+    this.outputTableDom = this.tableContainerDom.createChild('table', {
+      id: 'output-table'
+    });
+    for (var i = 0; i < dataToExport.length; i++) {
+      var tr = this.outputTableDom.createChild('tr');
+      for (var j = 0; j < dataToExport[i].length; j++) {
+        tr.createChild('td', {}, dataToExport[i][j] ? dataToExport[i][j] : '');
+      }
+    }
+
+    // Render export button
+    if (!this.exportButton) {
+      this.exportButton = this.actionContainerDOM.createChild('input', {
+        type: 'button',
+        value: 'Export',
+        class: 'action-button'
+      });
+      this.exportButton.addEventListener('click', function() {
+        export_table_to_excel('output-table');;
+      }, false);
+    }
+  },
+
+  foundInSub: function(val) {
+    for (var i = 0; i < this.subCollections.length; i++) {
+      if (this.subCollections[i] === val) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+}
