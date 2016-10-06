@@ -1,0 +1,70 @@
+a {
+  color: #00f;
+  text-decoration: underline;
+}
+
+.section {
+  margin: 10px;
+}
+
+.section .title {
+  padding: 0px 0px 10px 0px; 
+  font-weight: bold;
+}
+
+.actions {
+  line-height: 38px;
+}
+
+.file-name {
+  color: #f30;
+  font-weight: normal;
+}
+
+.drop {
+  border: 1px dashed #bbb;
+  border-radius: 5px;
+  padding: 10px;
+  min-height: 100px;
+
+  font: 20px bold;
+  color: #bbb;
+  text-align: center;
+}
+
+.dropped {
+  font: 14px regular;
+  color: #000;
+  text-align: left;
+}
+
+select {
+  padding: 2px 10px;
+  margin: 0px 10px 0px 0px;
+}
+
+input.action-button {
+  margin-left: 20px;
+  padding: 2px 20px;
+}
+
+.output {
+  overflow: auto;
+  margin: 10px;
+  border: 1px dashed #bbb;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.output table {
+  border-left: 1px solid black;
+  border-top: 1px solid black;
+  border-collapse: collapse;
+}
+
+.output table td {
+  border-right: 1px solid black;
+  border-bottom: 1px solid black;
+  min-width: 10px;
+  padding: 4px;
+}
