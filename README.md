@@ -1,10 +1,9 @@
-# MiscFragment
-Miscellaneous code fragment
+# Miscellaneous code fragment
 
 ## Javascript Excel
 
 ### Demo
-https://hui-w.github.io/misc-fragment/javascript-excel/
+https://hui-w.github.io/misc-fragment/js-excel/
 
 ### How to use the demo
 1. On the demo page, download the file of data and sub collections
@@ -15,3 +14,8 @@ https://hui-w.github.io/misc-fragment/javascript-excel/
 6. Select the row "4" from the row dropdown list
 7. Click "Process" button, then the table of selected data will be displayed
 8. Click "Export" button, the table will be exported as an XLSX file
+
+## Rate Calculator
+
+### Demo
+https://hui-w.github.io/misc-fragment/rate-calc/
