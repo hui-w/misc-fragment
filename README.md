@@ -2,10 +2,10 @@
 
 ## Javascript Excel
 
-### Demo
+#### Demo
 https://hui-w.github.io/misc-fragment/js-excel/
 
-### How to use the demo
+#### How to use the demo
 1. On the demo page, download the files of data and sub collections
 2. Drag the data file and drop it into the 1st file area, then the sheet names will be listed
 3. Drag the sub collections file and drop it into the 2nd file area, then all the data will be listed
@@ -17,5 +17,5 @@ https://hui-w.github.io/misc-fragment/js-excel/
 
 ## Rate Calculator
 
-### Demo
+#### Demo
 https://hui-w.github.io/misc-fragment/rate-calc/
