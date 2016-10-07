@@ -1,0 +1,40 @@
+html, body{
+	padding: 4px;
+	font-size: 12px;
+}
+#table-form {
+	width: 300px;
+}
+#table-form td{
+}
+.error{
+	width: 300px;
+	text-align: center;
+	color: #fff;
+	background-color: #f30;
+	padding: 10px;
+	margin: 10px 0px;
+}
+#table-roi{
+	width: 300px;
+	margin-top: 12px;
+}
+#table-roi td{
+	padding: 4px;
+	border: 1px solid #ccc;
+}
+#table-roi td.left {
+	width: 50px;
+	text-align: center;
+	background-color: #666;
+	color: #fff;
+}
+#table-roi td.right {
+	color: #000;
+	background-color: #eee;
+	cursor: pointer;
+}
+#table-roi td.highlighted {
+	color: #fff !important;
+	background-color: #666 !important;
+}
