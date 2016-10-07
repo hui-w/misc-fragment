@@ -1,0 +1,8 @@
+CACHE MANIFEST
+#version 20150112
+NETWORK:
+	./comm.cgi
+CACHE:
+	./apple-touch-icon.png
+	./app.min.js
+	./app.min.css

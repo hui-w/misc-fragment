@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html manifest="app.appcache">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+	<link rel="apple-touch-icon-precomposed" sizes="196x196" href="http://www.qlike.com/app/rate/apple-touch-icon.png" />
+	<link rel="shortcut icon" href="http://www.qlike.com/app/rate/favicon.ico" type="image/x-icon" />
+    <title>Rate Calculator</title>
+    <link href="app.min.css" rel="stylesheet" />
+    <script src="app.min.js"></script>
+  </head>
+  <body>
+	<div ng-app="rateApp" ng-controller="rateCtrl">
+		<table id="table-form" border="0">
+			<tr>
+				<td style="width: 55%">
+					<div class="input-group" style="width:100%">
+						<span class="input-group-addon">Base</span>
+						<input type="number" ng-model="base" min="1" max="10000" class="form-control" placeholder="Base" ng-click="onTextClick($event)">
+					</div>
+				<td style="width: 45%; padding-left: 4px;">
+					<div class="input-group" style="width:100%">
+						<span class="input-group-addon">Rate</span>
+						<input type="number" ng-model="rate" class="form-control" placeholder="Rate" ng-click="onTextClick($event)">
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" style="padding-top: 4px;">
+					<div class="input-group" style="width:100%">
+						<span class="input-group-addon">Circulation</span>
+						<input type="number" ng-model="count" class="form-control" placeholder="Cycle Count" ng-click="onTextClick($event)">
+						<span class="input-group-btn">
+							<button ng-click="calculate()" class="btn btn-default" type="button">Calculate</button>
+						</span>
+					</div>
+				</td>
+			</tr>
+		</table>
+		<div ng-bind-html="tipsHtml|to_trusted"></div>
+		<table id="table-roi">
+			<tr ng-repeat="data in roiData | reverse">
+				<td class="left">{{data.index}}</td>
+				<td class="right" ng-click="cellClick($event.target, data.index)">{{data.value}}</td>
+			</tr>
+		</table>
+	</div>
+  </body>
+</html>
