@@ -1,6 +1,6 @@
-# Miscellaneous code fragment
+# Drag ItA reusable JavaScript class to handle the drag and drop### Demohttps://hui-w.github.io/misc-fragment/drag-it/### How to use```jsvar obj = document.getElementById("objId");//create the instance of DragIt and register the callbackvar d = new DragIt(obj);d.registerCallback(function(offset) {    //offset = {left: X, top: Y}    obj.style.left = offset.left + "px";    obj.style.top = offset.top + "px";});```
 
-## Javascript Excel
+# Javascript Excel
 
 #### Demo
 https://hui-w.github.io/misc-fragment/js-excel/
@@ -15,26 +15,7 @@ https://hui-w.github.io/misc-fragment/js-excel/
 7. Click "Process" button, then the table of selected data will be displayed
 8. Click "Export" button, the table will be exported as an XLSX file
 
-## Rate Calculator
+# Rate Calculator
 
 #### Demo
 https://hui-w.github.io/misc-fragment/rate-calc/
-
-## Drag It
-A reusable JavaScript class to handle the drag and drop
-
-### Demo
-https://hui-w.github.io/misc-fragment/drag-it/
-
-### How to use
-```js
-var obj = document.getElementById("objId");
-
-//create the instance of DragIt and register the callback
-var d = new DragIt(obj);
-d.registerCallback(function(offset) {
-    //offset = {left: X, top: Y}
-    obj.style.left = offset.left + "px";
-    obj.style.top = offset.top + "px";
-});
-```
