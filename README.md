@@ -19,3 +19,22 @@ https://hui-w.github.io/misc-fragment/js-excel/
 
 #### Demo
 https://hui-w.github.io/misc-fragment/rate-calc/
+
+## Drag It
+A reusable JavaScript class to handle the drag and drop
+
+### Demo
+https://hui-w.github.io/misc-fragment/drag-it/
+
+### How to use
+```js
+var obj = document.getElementById("objId");
+
+//create the instance of DragIt and register the callback
+var d = new DragIt(obj);
+d.registerCallback(function(offset) {
+    //offset = {left: X, top: Y}
+    obj.style.left = offset.left + "px";
+    obj.style.top = offset.top + "px";
+});
+```
