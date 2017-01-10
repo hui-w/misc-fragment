@@ -37,3 +37,6 @@ https://hui-w.github.io/misc-fragment/js-excel/
 
 #### Demo
 https://hui-w.github.io/misc-fragment/rate-calc/
+
+# React ES6
+It's an enviroment configuration for "webpack + react + es6" with no real functionality.
