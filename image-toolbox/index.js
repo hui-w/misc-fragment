@@ -1,61 +1,25 @@
-const ExifImage = require('./lib/exif').ExifImage;
-const fs = require("fs");
-const path = require("path");
+var server = require('./http/server');
+var router = require('./http/router');
+var requestHandlers = require('./http/requestHandlers');
 
-const src_path = path.resolve('images_in');
-const dest_path = path.resolve('images_out');
+var HTTP_PORT = 8080;
+var WS_PORT = 8081;
 
-// Process the folder
-const processFolder = (filePath) => {
-  fs.readdir(filePath, (err, files) => {
-    if (err) {
-      console.log(err);
-      return;
-    }
+// Start the web server
+var handle = {}
+handle['/'] = requestHandlers.home;
+handle['/get'] = requestHandlers.get;
+handle['/~'] = requestHandlers.sendFile;
 
-    files.forEach((fileName) => {
-      const filePathName = path.join(filePath, fileName);
-      fs.stat(filePathName, (err, stats) => {
-        if (err) throw err;
+server.start(router.route, handle, HTTP_PORT);
 
-        if (stats.isFile()) {
-          processFile(filePathName);
-        } else if (stats.isDirectory()) {
-          processFolder(filePathName);
-        }
-      })
-    })
-  })
-};
-
-// Process the file
-const processFile = (filePathName) => {
-  new ExifImage({ image: filePathName }, function(error, exifData) {
-    if (error) {
-      console.log('Error: ' + error.message);
-    } else {
-      // fs.writeFile(path.resolve('info.json'), JSON.stringify(exifData));
-      const dateTime = exifData.exif.DateTimeOriginal;
-      const newFileName = dateTime.split(':').join('-').replace(' ', '_') + '.jpg';
-      copy(filePathName, path.resolve(dest_path, newFileName));
-      console.log(newFileName);
-    }
+// Start the web socket server
+var WebSocketServer = require('ws').Server,
+  wss = new WebSocketServer({ port: WS_PORT });
+wss.on('connection', function(ws) {
+  ws.on('message', function(message) {
+    console.log('- Message Received: %s', message);
   });
-};
-
-// Copy file
-const copy = (src, dst) => {
-  fs.writeFileSync(dst, fs.readFileSync(src));
-}
-
-// For big file
-const copy2 = (src, dst) => {
-  fs.createReadStream(src).pipe(fs.createWriteStream(dst));
-}
-
-// Main entry
-try {
-  processFolder(src_path);
-} catch (error) {
-  console.log('Error: ' + error.message);
-}
+  ws.send('something');
+});
+console.log('Web Socket has started on %s.', WS_PORT);

@@ -1,0 +1,17 @@
+{
+  "name": "image-toolbox",
+  "version": "1.0.0",
+  "description": "A demo project of HTTP, WS and Image",
+  "main": "index.js",
+  "dependencies": {
+    "ws": "^3.0.0"
+  },
+  "devDependencies": {
+    "ws": "^3.0.0"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Hui Wang <huiwang@qlike.com>",
+  "license": "ISC"
+}
