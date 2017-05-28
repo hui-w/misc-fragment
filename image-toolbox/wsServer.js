@@ -6,6 +6,10 @@ function start(port) {
     ws.on('message', function(message) {
       const data = JSON.parse(message);
       console.log('- Message Received: %s', data.op, data.value);
+      ws.send(JSON.stringify({
+      	op: data.op,
+      	value: data.value
+      }))
     });
     ws.send('something');
   });
