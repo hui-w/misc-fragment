@@ -2,7 +2,7 @@ const ExifImage = require('./lib/exif').ExifImage;
 const fs = require('fs');
 const path = require('path');
 
-const src_path = path.resolve('C:\\Users\\hwang21\\OneDrive - Hewlett Packard Enterprise\\Pictures');
+const src_path = path.resolve('C:\\Users\\hwang\\Pictures');
 const dest_path = path.resolve('images_out');
 
 // Process the folder
