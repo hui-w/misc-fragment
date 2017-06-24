@@ -1,3 +1,5 @@
+// Rename all photos in the folder to the date time info from its exif
+
 const ExifImage = require('./lib/exif').ExifImage;
 const fs = require('fs');
 const path = require('path');
