@@ -40,3 +40,10 @@ https://hui-w.github.io/misc-fragment/rate-calc/
 
 # React ES6
 It's an enviroment configuration for "webpack + react + es6" with no real functionality.
+
+# Tax Calc CN
+Chinese tax calculator which used to be in PhoneGap(Cordova) for mobility.
+Build with EnyoJS.
+
+#### Demo
+https://hui-w.github.io/misc-fragment/tax-calc
