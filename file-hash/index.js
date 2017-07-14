@@ -7,7 +7,22 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
-// Process the folder
+// The count of item to process
+var queueSize = 0;
+
+const queueIncrease = () => {
+  queueSize++;
+};
+
+const queueReduce = () => {
+  queueSize--;
+
+  if (queueSize == 0) {
+    console.log('done');
+  }
+};
+
+// Recursively process the folder
 const processFolder = filePath => {
   try {
     fs.readdir(filePath, (err, files) => {
@@ -17,6 +32,8 @@ const processFolder = filePath => {
       }
 
       files.forEach(fileName => {
+        // Find new item
+        queueIncrease();
         const filePathName = path.join(filePath, fileName);
         fs.stat(filePathName, (err, stats) => {
           if (err) throw err;
@@ -28,13 +45,16 @@ const processFolder = filePath => {
           }
         });
       });
+
+      // Folder processing complete
+      queueReduce();
     });
   } catch (error) {
     throw error;
   }
 };
 
-// Process the file
+// Calc the md5 sum of the file
 const processFile = filePathName => {
   try {
     //console.log(filePathName);
@@ -49,6 +69,9 @@ const processFile = filePathName => {
     s.on('end', function() {
       const d = md5sum.digest('hex');
       console.log(d + '  ' + filePathName);
+
+      // File processing complete
+      queueReduce();
     });
   } catch (error) {
     throw error;
@@ -59,6 +82,7 @@ const processFile = filePathName => {
 try {
   if (process.argv.length === 3) {
     const filePath = process.argv[2];
+    queueIncrease();
     processFolder(filePath);
   } else {
     console.log('Invalid argument');
