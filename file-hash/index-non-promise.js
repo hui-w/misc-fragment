@@ -22,63 +22,41 @@ const queueReduce = () => {
   }
 };
 
-// Get all files and directories from the folder
-const readFolder = folderPath =>
-  new Promise((resolve, reject) => {
-    fs.readdir(folderPath, (err, files) => {
+// Recursively process the folder
+const processFolder = filePath => {
+  try {
+    fs.readdir(filePath, (err, files) => {
       if (err) {
-        reject(err);
-      } else {
-        resolve(files);
+        console.log(err);
+        return;
       }
-    });
-  });
 
-// Get the type of a file or directory
-const statFile = filePathname =>
-  new Promise((resolve, reject) => {
-    fs.stat(filePathname, (err, stats) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(stats);
-      }
-    });
-  });
-
-// Process the folder
-const processFolder = folderPath => {
-  readFolder(folderPath)
-    .then(fileNames => {
-      fileNames.forEach(fileName => {
+      files.forEach(fileName => {
         // Find new item
         queueIncrease();
-        const filePathName = path.join(folderPath, fileName);
-        statFile(filePathName)
-          .then(stats => {
-            if (stats.isFile()) {
-              processFile(filePathName);
-            } else if (stats.isDirectory()) {
-              processFolder(filePathName);
-            }
-          })
-          .catch(err => {
-            throw err;
-          });
+        const filePathName = path.join(filePath, fileName);
+        fs.stat(filePathName, (err, stats) => {
+          if (err) throw err;
+
+          if (stats.isFile()) {
+            processFile(filePathName);
+          } else if (stats.isDirectory()) {
+            processFolder(filePathName);
+          }
+        });
       });
+
       // Folder processing complete
       queueReduce();
-    })
-    .catch(err => {
-      throw err;
     });
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Calc the md5 sum of the file
 const processFile = filePathName => {
   try {
-    //console.log(filePathName);
-    //return;
     const md5sum = crypto.createHash('md5');
 
     const s = fs.ReadStream(filePathName);
