@@ -7,6 +7,9 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
+// The object to store all file data
+var fileData = {};
+
 // The count of item to process
 var queueSize = 0;
 
@@ -18,7 +21,8 @@ const queueReduce = () => {
   queueSize--;
 
   if (queueSize == 0) {
-    console.log('done');
+    // The final output
+    console.log(fileData);
   }
 };
 
@@ -35,9 +39,9 @@ const readFolder = folderPath =>
   });
 
 // Get the type of a file or directory
-const statFile = filePathname =>
+const statFile = filePathName =>
   new Promise((resolve, reject) => {
-    fs.stat(filePathname, (err, stats) => {
+    fs.stat(filePathName, (err, stats) => {
       if (err) {
         reject(err);
       } else {
@@ -88,7 +92,19 @@ const processFile = filePathName => {
 
     s.on('end', function() {
       const d = md5sum.digest('hex');
-      console.log(d + '  ' + filePathName);
+
+      // Add into fileData
+      if (fileData[d]) {
+        // Key already existing
+        fileData[d].count++;
+        fileData[d].files.push(filePathName);
+      } else {
+        // New key
+        fileData[d] = {
+          count: 1,
+          files: [filePathName]
+        };
+      }
 
       // File processing complete
       queueReduce();
