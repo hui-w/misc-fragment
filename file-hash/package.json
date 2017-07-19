@@ -2,13 +2,10 @@
   "name": "file-hash",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
+  "main": "index.js",
   "scripts": {
     "start": "electron ."
   },
   "author": "Hui Wang <huiwang@qlike.com>",
-  "license": "ISC",
-  "devDependencies": {
-    "electron": "~1.6.2"
-  }
+  "license": "ISC"
 }
