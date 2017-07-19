@@ -9,23 +9,40 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
-module.exports = filePath => {
+module.exports = (filePath, onMessage, onComplete) => {
   // The object to store all file data
-  var fileData = {};
+  let fileData = {};
+
+  let fileCount = 0;
+  let directoryCount = 0;
 
   // The count of item to process
-  var queueSize = 0;
+  let todoCount = 0;
 
-  const queueIncrease = () => {
-    queueSize++;
+  const todoIncrease = () => {
+    todoCount++;
   };
 
-  const queueReduce = () => {
-    queueSize--;
+  const todoReduce = () => {
+    todoCount--;
 
-    if (queueSize == 0) {
+    // Update the message
+    sendMessage();
+
+    if (todoCount == 0) {
       // The final output
-      console.log(fileData);
+      if (typeof onComplete === 'function') {
+        onComplete(fileData);
+      }
+    }
+  };
+
+  const sendMessage = () => {
+    if (typeof onMessage === 'function') {
+      onComplete({
+        fileCount,
+        directoryCount
+      });
     }
   };
 
@@ -59,7 +76,7 @@ module.exports = filePath => {
       .then(fileNames => {
         fileNames.forEach(fileName => {
           // Find new item
-          queueIncrease();
+          todoIncrease();
           const filePathName = path.join(folderPath, fileName);
           statFile(filePathName)
             .then(stats => {
@@ -73,8 +90,10 @@ module.exports = filePath => {
               throw err;
             });
         });
+
         // Folder processing complete
-        queueReduce();
+        directoryCount++;
+        todoReduce();
       })
       .catch(err => {
         throw err;
@@ -110,13 +129,14 @@ module.exports = filePath => {
         }
 
         // File processing complete
-        queueReduce();
+        fileCount++;
+        todoReduce();
       });
     } catch (error) {
       throw error;
     }
   };
 
-  queueIncrease();
+  todoIncrease();
   processFolder(filePath);
 };
