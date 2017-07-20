@@ -1,23 +1,24 @@
 'use strict';
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 
 /*
   * Find out duplicated files
   * How to use: >node index.js [FolderName]
 */
-
-const crypto = require('crypto');
-const fs = require('fs');
-const path = require('path');
-
 module.exports = (filePath, onMessage, onComplete) => {
   // The object to store all file data
   let fileData = {};
 
+  let fileList = [];
   let fileCount = 0;
-  let directoryCount = 0;
+
+  // The directory count and todoCount starts from 1 as there is a filePath passed in
+  let directoryCount = 1;
 
   // The count of item to process
-  let todoCount = 0;
+  let todoCount = 1;
 
   const todoIncrease = () => {
     todoCount++;
@@ -30,10 +31,8 @@ module.exports = (filePath, onMessage, onComplete) => {
     sendMessage();
 
     if (todoCount == 0) {
-      // The final output
-      if (typeof onComplete === 'function') {
-        onComplete(fileData);
-      }
+      // console.log(fileList);
+      processFiles();
     }
   };
 
@@ -70,30 +69,66 @@ module.exports = (filePath, onMessage, onComplete) => {
       });
     });
 
+  // Hash the file
+  const hashFile = filePathName =>
+    new Promise((resolve, reject) => {
+      try {
+        const md5sum = crypto.createHash('md5');
+
+        const s = fs.ReadStream(filePathName);
+        s.on('data', function(d) {
+          md5sum.update(d);
+        });
+
+        s.on('end', function() {
+          const d = md5sum.digest('hex');
+
+          resolve(d);
+        });
+      } catch (err) {
+        reject(err);
+      }
+    });
+
   // Process the folder
   const processFolder = folderPath => {
     readFolder(folderPath)
       .then(fileNames => {
-        fileNames.forEach(fileName => {
-          // Find new item
-          todoIncrease();
+        if (fileNames.length == 0) {
+          // This is an empty directory
+          todoReduce();
+        }
+
+        // To through each item
+        fileNames.forEach((fileName, index) => {
           const filePathName = path.join(folderPath, fileName);
           statFile(filePathName)
             .then(stats => {
               if (stats.isFile()) {
-                processFile(filePathName);
+                // Add the file to the list and it will be handled later
+                fileList.push(filePathName);
+
+                // New file found
+                fileCount++;
               } else if (stats.isDirectory()) {
+                // Find new item
+                todoIncrease();
+
                 processFolder(filePathName);
+
+                // New directory found
+                directoryCount++;
+              }
+
+              if (index === fileNames.length - 1) {
+                // Folder checking complete
+                todoReduce();
               }
             })
             .catch(err => {
               throw err;
             });
         });
-
-        // Folder processing complete
-        directoryCount++;
-        todoReduce();
       })
       .catch(err => {
         throw err;
@@ -101,20 +136,21 @@ module.exports = (filePath, onMessage, onComplete) => {
   };
 
   // Calc the md5 sum of the file
-  const processFile = filePathName => {
-    try {
-      //console.log(filePathName);
-      //return;
-      const md5sum = crypto.createHash('md5');
+  const processFiles = () => {
+    if (fileList.length <= 0) {
+      // The final output
+      if (typeof onComplete === 'function') {
+        onComplete(fileData);
+      }
 
-      const s = fs.ReadStream(filePathName);
-      s.on('data', function(d) {
-        md5sum.update(d);
-      });
+      return;
+    }
 
-      s.on('end', function() {
-        const d = md5sum.digest('hex');
+    // Get one file from the list
+    const filePathName = fileList.pop();
 
+    hashFile(filePathName)
+      .then(d => {
         // Add into fileData
         if (fileData[d]) {
           // Key already existing
@@ -128,15 +164,13 @@ module.exports = (filePath, onMessage, onComplete) => {
           };
         }
 
-        // File processing complete
-        fileCount++;
-        todoReduce();
+        // Process next file if exists
+        processFiles();
+      })
+      .catch(err => {
+        throw err;
       });
-    } catch (error) {
-      throw error;
-    }
   };
 
-  todoIncrease();
   processFolder(filePath);
 };
