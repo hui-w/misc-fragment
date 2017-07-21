@@ -7,13 +7,12 @@ try {
     const filePath = process.argv[2];
     fileHash(
       filePath,
-      messageData => {
-        console.log(
-          `Processed ${messageData.fileCount} files in ${messageData.directoryCount} directories`
-        );
+      message => {
+        console.log(message);
       },
       fileData => {
-        console.log(fileData);
+        console.log('Done');
+        // console.log(fileData);
       }
     );
   } else {

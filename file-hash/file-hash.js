@@ -20,30 +20,28 @@ module.exports = (filePath, onMessage, onComplete) => {
   // The count of item to process
   let todoCount = 1;
 
-  const todoIncrease = () => {
-    todoCount++;
-  };
+  function sendMessage(message) {
+    if (typeof onMessage === 'function') {
+      onMessage(message);
+    }
+  }
 
-  const todoReduce = () => {
+  function todoIncrease() {
+    todoCount++;
+  }
+
+  function todoReduce() {
     todoCount--;
 
     // Update the message
-    sendMessage();
+    sendMessage(`Found ${fileCount} files in ${directoryCount} directories`);
 
+    // File list ready, start to process
     if (todoCount == 0) {
       // console.log(fileList);
       processFiles();
     }
-  };
-
-  const sendMessage = () => {
-    if (typeof onMessage === 'function') {
-      onComplete({
-        fileCount,
-        directoryCount
-      });
-    }
-  };
+  }
 
   // Get all files and directories from the folder
   const readFolder = folderPath =>
@@ -91,7 +89,7 @@ module.exports = (filePath, onMessage, onComplete) => {
     });
 
   // Process the folder
-  const processFolder = folderPath => {
+  function processFolder(folderPath) {
     readFolder(folderPath)
       .then(fileNames => {
         if (fileNames.length == 0) {
@@ -133,10 +131,10 @@ module.exports = (filePath, onMessage, onComplete) => {
       .catch(err => {
         throw err;
       });
-  };
+  }
 
   // Calc the md5 sum of the file
-  const processFiles = () => {
+  function processFiles() {
     if (fileList.length <= 0) {
       // The final output
       if (typeof onComplete === 'function') {
@@ -148,6 +146,8 @@ module.exports = (filePath, onMessage, onComplete) => {
 
     // Get one file from the list
     const filePathName = fileList.pop();
+    const fileNumber = fileCount - fileList.length;
+    sendMessage(`Processing ${fileNumber} of ${fileCount}`);
 
     hashFile(filePathName)
       .then(d => {
@@ -170,7 +170,7 @@ module.exports = (filePath, onMessage, onComplete) => {
       .catch(err => {
         throw err;
       });
-  };
+  }
 
   processFolder(filePath);
 };
