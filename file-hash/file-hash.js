@@ -7,7 +7,7 @@ const path = require('path');
   * Find out duplicated files
   * How to use: >node index.js [FolderName]
 */
-module.exports = (filePath, onMessage, onComplete) => {
+module.exports = function(filePath, onMessage, onComplete) {
   // The object to store all file data
   let fileData = {};
 

@@ -1,18 +1,20 @@
 'use strict';
-const fileHash = require('./file-hash');
+const hashFiles = require('./file-hash');
+const showReport = require('./report');
 
 // Main entry
 try {
   if (process.argv.length === 3) {
     const filePath = process.argv[2];
-    fileHash(
+    hashFiles(
       filePath,
       message => {
         console.log(message);
       },
       fileData => {
-        console.log('Done');
-        // console.log(fileData);
+        showReport(fileData, function() {
+          console.log('Done');
+        });
       }
     );
   } else {
