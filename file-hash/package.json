@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "electron ."
+    "start": "node index.js ../"
   },
   "author": "Hui Wang <huiwang@qlike.com>",
   "license": "ISC"
