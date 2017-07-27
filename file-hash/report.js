@@ -10,16 +10,21 @@ module.exports = function(fileData, onComplete) {
       throw err;
     }
 
-    const trs = Object.keys(fileData)
+    // Summary
+
+    // Table rows
+    const trs = Object.keys(fileData.hash)
       .map(key => {
-        const row = fileData[key];
-        return `<tr><td>${row.count}</td><td>${row.files}</td></tr>`;
+        const row = fileData.hash[key];
+        return `<tr><td>${row.count}</td><td>${row.files}</td></tr>\n`;
       })
       .join('');
 
-    console.log(data);
-
-    const html = data.replace('${trs}', trs);
+    const html = data
+      .replace('${dateTime}', new Date())
+      .replace('${trs}', trs)
+      .replace('${fileCount}', fileData.fileCount)
+      .replace('${directoryCount}', fileData.directoryCount);
 
     fs.writeFile('./report.html', html, function(err) {
       if (err) {

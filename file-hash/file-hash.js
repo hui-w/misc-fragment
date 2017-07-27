@@ -9,13 +9,16 @@ const path = require('path');
 */
 module.exports = function(filePath, onMessage, onComplete) {
   // The object to store all file data
-  let fileData = {};
+  let fileData = {
+    fileCount: 0,
+
+    // The directory count and todoCount starts from 1 as there is a filePath passed in
+    directoryCount: 1,
+
+    hash: {}
+  };
 
   let fileList = [];
-  let fileCount = 0;
-
-  // The directory count and todoCount starts from 1 as there is a filePath passed in
-  let directoryCount = 1;
 
   // The count of item to process
   let todoCount = 1;
@@ -34,7 +37,7 @@ module.exports = function(filePath, onMessage, onComplete) {
     todoCount--;
 
     // Update the message
-    sendMessage(`Found ${fileCount} files in ${directoryCount} directories`);
+    sendMessage(`Found ${fileData.fileCount} files in ${fileData.directoryCount} directories`);
 
     // File list ready, start to process
     if (todoCount == 0) {
@@ -107,7 +110,7 @@ module.exports = function(filePath, onMessage, onComplete) {
                 fileList.push(filePathName);
 
                 // New file found
-                fileCount++;
+                fileData.fileCount++;
               } else if (stats.isDirectory()) {
                 // Find new item
                 todoIncrease();
@@ -115,7 +118,7 @@ module.exports = function(filePath, onMessage, onComplete) {
                 processFolder(filePathName);
 
                 // New directory found
-                directoryCount++;
+                fileData.directoryCount++;
               }
 
               if (index === fileNames.length - 1) {
@@ -146,19 +149,19 @@ module.exports = function(filePath, onMessage, onComplete) {
 
     // Get one file from the list
     const filePathName = fileList.pop();
-    const fileNumber = fileCount - fileList.length;
-    sendMessage(`Processing ${fileNumber} of ${fileCount}`);
+    const fileNumber = fileData.fileCount - fileList.length;
+    sendMessage(`Processing ${fileNumber} of ${fileData.fileCount}`);
 
     hashFile(filePathName)
       .then(d => {
         // Add into fileData
-        if (fileData[d]) {
+        if (fileData.hash[d]) {
           // Key already existing
-          fileData[d].count++;
-          fileData[d].files.push(filePathName);
+          fileData.hash[d].count++;
+          fileData.hash[d].files.push(filePathName);
         } else {
           // New key
-          fileData[d] = {
+          fileData.hash[d] = {
             count: 1,
             files: [filePathName]
           };
