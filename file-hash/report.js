@@ -14,9 +14,9 @@ module.exports = function(fileData, onComplete) {
 
     // Table rows
     const trs = Object.keys(fileData.hash)
-      .map(key => {
+      .map((key, index) => {
         const row = fileData.hash[key];
-        return `<tr><td>${row.count}</td><td>${row.files}</td></tr>\n`;
+        return `<tr><td>${index + 1}</td><td>${row.files}</td><td>${row.count}</td></tr>\n`;
       })
       .join('');
 

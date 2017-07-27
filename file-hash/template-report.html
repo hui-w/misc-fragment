@@ -18,17 +18,26 @@ th {
 </head>
 <body>
 
-<p>
-${dateTime}
-</p>
+  <p>
+  ${dateTime}
+  </p>
 
-<p>
-Scanned ${fileCount} files in ${directoryCount} directories.
-</p>
+  <p>
+  Scanned ${fileCount} files in ${directoryCount} directories.
+  </p>
 
-<table>
-  ${trs}
-</table>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>File Path</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${trs}
+    </tbody>
+  </table>
 
 </body>
 </html>
