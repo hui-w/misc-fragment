@@ -16,7 +16,12 @@ module.exports = function(fileData, onComplete) {
     const trs = Object.keys(fileData.hash)
       .map((key, index) => {
         const row = fileData.hash[key];
-        return `<tr><td>${index + 1}</td><td>${row.files}</td><td>${row.count}</td></tr>\n`;
+        if (row.count > 1) {
+          const fileList = row.files.map(file => `<div>${file}</div>`).join('');
+          return `      <tr class="warning"><td>${index + 1}</td><td>${fileList}</td><td>${row.count}</td></tr>\n`;
+        } else {
+          return `      <tr><td>${index + 1}</td><td>${row.files[0]}</td><td>${row.count}</td></tr>\n`;
+        }
       })
       .join('');
 
