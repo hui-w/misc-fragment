@@ -37,7 +37,9 @@ module.exports = function(filePath, onMessage, onComplete) {
     todoCount--;
 
     // Update the message
-    sendMessage(`Found ${fileData.fileCount} files in ${fileData.directoryCount} directories`);
+    sendMessage(
+      `Found ${fileData.fileCount} files in ${fileData.directoryCount} directories`
+    );
 
     // File list ready, start to process
     if (todoCount == 0) {
@@ -106,8 +108,15 @@ module.exports = function(filePath, onMessage, onComplete) {
           statFile(filePathName)
             .then(stats => {
               if (stats.isFile()) {
+                const fileSizeInBytes = stats.size;
+                //Convert the file size to megabytes (optional)
+                const fileSizeInMegabytes = fileSizeInBytes / 1000000.0;
+
                 // Add the file to the list and it will be handled later
-                fileList.push(filePathName);
+                fileList.push({
+                  filePathName,
+                  size: fileSizeInBytes
+                });
 
                 // New file found
                 fileData.fileCount++;
@@ -148,7 +157,8 @@ module.exports = function(filePath, onMessage, onComplete) {
     }
 
     // Get one file from the list
-    const filePathName = fileList.pop();
+    const fileObj = fileList.pop();
+    const filePathName = fileObj.filePathName;
     const fileNumber = fileData.fileCount - fileList.length;
     sendMessage(`Processing ${fileNumber} of ${fileData.fileCount}`);
 
@@ -163,7 +173,8 @@ module.exports = function(filePath, onMessage, onComplete) {
           // New key
           fileData.hash[d] = {
             count: 1,
-            files: [filePathName]
+            files: [filePathName],
+            size: fileObj.size
           };
         }
 

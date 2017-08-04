@@ -18,9 +18,9 @@ module.exports = function(fileData, onComplete) {
         const row = fileData.hash[key];
         if (row.count > 1) {
           const fileList = row.files.map(file => `<div>${file}</div>`).join('');
-          return `      <tr class="warning"><td>${index + 1}</td><td>${fileList}</td><td>${row.count}</td></tr>\n`;
+          return `      <tr class="warning"><td>${index + 1}</td><td>${fileList}</td><td>${row.size}</td><td>${row.count}</td></tr>\n`;
         } else {
-          return `      <tr><td>${index + 1}</td><td>${row.files[0]}</td><td>${row.count}</td></tr>\n`;
+          return `      <tr><td>${index + 1}</td><td>${row.files[0]}</td><td>${row.size}</td><td>${row.count}</td></tr>\n`;
         }
       })
       .join('');
