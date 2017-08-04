@@ -10,6 +10,7 @@ try {
       filePath,
       message => {
         console.log(message);
+        //process.stdout.write(message + '\r');
       },
       fileData => {
         showReport(fileData, function() {
