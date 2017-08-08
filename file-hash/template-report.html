@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
+<title>File Status Report</title>
 <style>
+
 table, td, th {
     border: 1px solid black;
 }
@@ -11,13 +13,27 @@ table {
     width: 100%;
 }
 
-th {
-    text-align: left;
+table.file-report td.num {
+  text-align: center;
 }
 
-tr.warning {
-  color: red;
+table.file-report td.path{
+
 }
+
+table.file-report th.size, table.file-report td.size {
+  text-align: right;
+}
+
+table.file-report td.status {
+  text-align: center;
+}
+
+table.file-report tr.highlight td.status {
+  background-color: RGB(251, 188, 5);
+}
+
+td.
 </style>
 </head>
 <body>
@@ -30,13 +46,13 @@ tr.warning {
   Scanned ${fileCount} files in ${directoryCount} directories.
   </p>
 
-  <table>
+  <table class="file-report">
     <thead>
       <tr>
-        <th>#</th>
-        <th>File Path</th>
-        <th>File Size</th>
-        <th>Status</th>
+        <th class="num">#</th>
+        <th class="path">File Path</th>
+        <th class="size">File Size (KB)</th>
+        <th class="status">Duplicates</th>
       </tr>
     </thead>
     <tbody>
