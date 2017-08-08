@@ -10,6 +10,12 @@ module.exports = function(fileData, onComplete) {
       throw err;
     }
 
+    function numberWithCommas(x) {
+      var parts = x.toString().split('.');
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      return parts.join('.');
+    }
+
     // Summary
 
     // Table rows
@@ -19,16 +25,22 @@ module.exports = function(fileData, onComplete) {
 
         const rowNum = index + 1;
         const trClass = row.count > 1 ? 'highlight' : '';
-        const fileList = row.count > 1 ? row.files.map(file => `<div>${file}</div>`).join('') : row.files[0];
+        const fileList =
+          row.count > 1
+            ? row.files.map(file => `<div>${file}</div>`).join('')
+            : row.files[0];
+        const fileSize = numberWithCommas(row.size);
         const duplicates = row.count > 1 ? row.count : '';
 
-        return `      ` +
+        return (
+          `      ` +
           `<tr class="${trClass}">` +
           `<td class="num">${rowNum}</td>` +
           `<td class="path">${fileList}</td>` +
-          `<td class="size">${row.size}</td>` +
+          `<td class="size">${fileSize}</td>` +
           `<td class="status">${duplicates}</td>` +
-          `</tr>\n`;
+          `</tr>\n`
+        );
       })
       .join('');
 
