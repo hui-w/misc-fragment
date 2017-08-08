@@ -4,6 +4,11 @@
 <title>File Status Report</title>
 <style>
 
+html, body {
+  padding: 4px;
+  margin: 0px;
+}
+
 table, td, th {
     border: 1px solid black;
 }
@@ -13,27 +18,44 @@ table {
     width: 100%;
 }
 
-table.file-report td.num {
+th {
+  padding: 4px;
+  color: #fff;
+  background-color: RGB(29, 157, 116);
+}
+
+td {
+  padding: 0px 4px;
+}
+
+.report-table td.num {
   text-align: center;
 }
 
-table.file-report td.path{
+.report-table td.path{
 
 }
 
-table.file-report th.size, table.file-report td.size {
+.report-table th.size, .report-table td.size {
   text-align: right;
 }
 
-table.file-report td.status {
+.report-table td.status {
   text-align: center;
 }
 
-table.file-report tr.highlight td.status {
+.report-table tr.odd {
+  background-color: RGB(230, 230, 230);
+}
+
+.report-table tr.highlight td.status {
   background-color: RGB(251, 188, 5);
 }
 
-td.
+.report-table tr:hover {
+  background-color: #ccc;
+}
+
 </style>
 </head>
 <body>
@@ -46,7 +68,7 @@ td.
   Scanned ${fileCount} files in ${directoryCount} directories.
   </p>
 
-  <table class="file-report">
+  <table class="report-table">
     <thead>
       <tr>
         <th class="num">#</th>

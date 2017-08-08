@@ -24,7 +24,10 @@ module.exports = function(fileData, onComplete) {
         const row = fileData.hash[key];
 
         const rowNum = index + 1;
-        const trClass = row.count > 1 ? 'highlight' : '';
+        let trClass = index % 2 !== 0 ? 'odd' : '';
+        if (row.count > 1) {
+          trClass += ' highlight';
+        }
         const fileList =
           row.count > 1
             ? row.files.map(file => `<div>${file}</div>`).join('')
