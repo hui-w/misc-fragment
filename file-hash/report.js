@@ -17,9 +17,10 @@ module.exports = function(fileData, onComplete) {
     }
 
     // Summary
+    const sortedKeys = Object.keys(fileData.hash).sort((a, b) => fileData.hash[b].count - fileData.hash[a].count);
 
     // Table rows
-    const trs = Object.keys(fileData.hash)
+    const trs = sortedKeys
       .map((key, index) => {
         const row = fileData.hash[key];
 
