@@ -10,6 +10,23 @@ module.exports = function(fileData, onComplete) {
       throw err;
     }
 
+    function buildFileList(files) {
+      const rows = files
+        .map(
+          file =>
+            `<tr class="main-info"><td colspan="5">${file.pathName}</td></tr>` +
+            '<tr class="secondary-info">' +
+            `<td>Created: (${file.birthtime.toISOString()})</td>` +
+            `<td>Access: (${file.atime.toISOString()})</td>` +
+            `<td>Modified: (${file.mtime.toISOString()})</td>` +
+            `<td>Change: (${file.ctime.toISOString()})</td>` +
+            `<td>Size: ${file.size} bytes</td>` +
+            '</tr>'
+        )
+        .join('');
+      return `<table class="file-list-table">${rows}</table>`;
+    }
+
     function numberWithCommas(x) {
       var parts = x.toString().split('.');
       parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -17,7 +34,9 @@ module.exports = function(fileData, onComplete) {
     }
 
     // Summary
-    const sortedKeys = Object.keys(fileData.hash).sort((a, b) => fileData.hash[b].count - fileData.hash[a].count);
+    const sortedKeys = Object.keys(fileData.hash).sort(
+      (a, b) => fileData.hash[b].count - fileData.hash[a].count
+    );
 
     // Table rows
     const trs = sortedKeys
@@ -30,9 +49,7 @@ module.exports = function(fileData, onComplete) {
           trClass += ' highlight';
         }
         const fileList =
-          row.count > 1
-            ? row.files.map(file => `<div>${file.pathName} (${file.birthtime.toISOString()})</div>`).join('')
-            : row.files[0].pathName;
+          row.count > 1 ? buildFileList(row.files) : row.files[0].pathName;
         const fileSize = numberWithCommas(row.size);
         const duplicates = row.count > 1 ? row.count : '';
 
