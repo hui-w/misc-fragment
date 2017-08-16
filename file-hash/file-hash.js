@@ -61,9 +61,9 @@ module.exports = function(filePath, onMessage, onComplete) {
     });
 
   // Get the type of a file or directory
-  const statFile = filePathName =>
+  const statFile = pathName =>
     new Promise((resolve, reject) => {
-      fs.stat(filePathName, (err, stats) => {
+      fs.stat(pathName, (err, stats) => {
         if (err) {
           reject(err);
         } else {
@@ -73,12 +73,12 @@ module.exports = function(filePath, onMessage, onComplete) {
     });
 
   // Hash the file
-  const hashFile = filePathName =>
+  const hashFile = pathName =>
     new Promise((resolve, reject) => {
       try {
         const md5sum = crypto.createHash('md5');
 
-        const s = fs.ReadStream(filePathName);
+        const s = fs.ReadStream(pathName);
         s.on('data', function(d) {
           md5sum.update(d);
         });
@@ -104,18 +104,29 @@ module.exports = function(filePath, onMessage, onComplete) {
 
         // To through each item
         fileNames.forEach((fileName, index) => {
-          const filePathName = path.join(folderPath, fileName);
-          statFile(filePathName)
+          const pathName = path.join(folderPath, fileName);
+          statFile(pathName)
             .then(stats => {
               if (stats.isFile()) {
-                const fileSizeInBytes = stats.size;
+                /*
+                  Size in bytes
+                  Access time
+                  Modified time
+                  Change time
+                  Birth time
+                */
+                const { size, atime, mtime, ctime, birthtime } = stats;
                 //Convert the file size to megabytes (optional)
-                const fileSizeInMegabytes = fileSizeInBytes / 1000000.0;
+                const fileSizeInMegabytes = size / 1000000.0;
 
                 // Add the file to the list and it will be handled later
                 fileList.push({
-                  filePathName,
-                  size: fileSizeInBytes
+                  pathName,
+                  size,
+                  atime,
+                  mtime,
+                  ctime,
+                  birthtime
                 });
 
                 // New file found
@@ -124,7 +135,7 @@ module.exports = function(filePath, onMessage, onComplete) {
                 // Find new item
                 todoIncrease();
 
-                processFolder(filePathName);
+                processFolder(pathName);
 
                 // New directory found
                 fileData.directoryCount++;
@@ -158,22 +169,21 @@ module.exports = function(filePath, onMessage, onComplete) {
 
     // Get one file from the list
     const fileObj = fileList.pop();
-    const filePathName = fileObj.filePathName;
     const fileNumber = fileData.fileCount - fileList.length;
     sendMessage(`Processing ${fileNumber} of ${fileData.fileCount}`);
 
-    hashFile(filePathName)
+    hashFile(fileObj.pathName)
       .then(d => {
         // Add into fileData
         if (fileData.hash[d]) {
           // Key already existing
           fileData.hash[d].count++;
-          fileData.hash[d].files.push(filePathName);
+          fileData.hash[d].files.push(fileObj);
         } else {
           // New key
           fileData.hash[d] = {
             count: 1,
-            files: [filePathName],
+            files: [fileObj],
             size: fileObj.size
           };
         }

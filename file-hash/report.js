@@ -31,8 +31,8 @@ module.exports = function(fileData, onComplete) {
         }
         const fileList =
           row.count > 1
-            ? row.files.map(file => `<div>${file}</div>`).join('')
-            : row.files[0];
+            ? row.files.map(file => `<div>${file.pathName} (${file.birthtime.toISOString()})</div>`).join('')
+            : row.files[0].pathName;
         const fileSize = numberWithCommas(row.size);
         const duplicates = row.count > 1 ? row.count : '';
 
