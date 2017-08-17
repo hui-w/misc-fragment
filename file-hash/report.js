@@ -5,7 +5,10 @@ const fs = require('fs');
   * Generate the file report
 */
 module.exports = function(fileData, onComplete) {
-  fs.readFile('./static/report-template.html', 'utf8', function read(err, data) {
+  fs.readFile('./static/report-template.html', 'utf8', function read(
+    err,
+    data
+  ) {
     if (err) {
       throw err;
     }
@@ -25,7 +28,7 @@ module.exports = function(fileData, onComplete) {
         )
         .join('');
       return (
-        '<table class="file-list-table">' +
+        '<table class="duplicates">' +
         '  <thead>' +
         '    <tr>' +
         '      <th>Created</th>' +
@@ -48,9 +51,12 @@ module.exports = function(fileData, onComplete) {
       return parts.join('.');
     }
 
-    // Summary
+    // Sort the fileData for output
     const sortedKeys = Object.keys(fileData.hash).sort(
-      (a, b) => fileData.hash[b].count - fileData.hash[a].count
+      (a, b) =>
+        fileData.hash[b].count === fileData.hash[a].count
+          ? fileData.hash[b].size - fileData.hash[a].size
+          : fileData.hash[b].count - fileData.hash[a].count
     );
 
     // Table rows
@@ -92,7 +98,9 @@ module.exports = function(fileData, onComplete) {
       }
 
       // Copy the style file
-      fs.createReadStream('./static/report-style.css').pipe(fs.createWriteStream('./output/style.css'));
+      fs
+        .createReadStream('./static/report-style.css')
+        .pipe(fs.createWriteStream('./output/style.css'));
 
       if (typeof onComplete === 'function') {
         onComplete();
