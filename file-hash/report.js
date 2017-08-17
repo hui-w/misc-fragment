@@ -5,7 +5,7 @@ const fs = require('fs');
   * Generate the file report
 */
 module.exports = function(fileData, onComplete) {
-  fs.readFile('./template-report.html', 'utf8', function read(err, data) {
+  fs.readFile('./static/report-template.html', 'utf8', function read(err, data) {
     if (err) {
       throw err;
     }
@@ -16,15 +16,30 @@ module.exports = function(fileData, onComplete) {
           file =>
             `<tr class="main-info"><td colspan="5">${file.pathName}</td></tr>` +
             '<tr class="secondary-info">' +
-            `<td>Created: (${file.birthtime.toISOString()})</td>` +
-            `<td>Access: (${file.atime.toISOString()})</td>` +
-            `<td>Modified: (${file.mtime.toISOString()})</td>` +
-            `<td>Change: (${file.ctime.toISOString()})</td>` +
-            `<td>Size: ${file.size} bytes</td>` +
+            `<td>${file.birthtime.YYYYMMDDHHMMSS()}</td>` +
+            `<td>${file.atime.YYYYMMDDHHMMSS()}</td>` +
+            `<td>${file.mtime.YYYYMMDDHHMMSS()}</td>` +
+            `<td>${file.ctime.YYYYMMDDHHMMSS()}</td>` +
+            `<td>${file.size} bytes</td>` +
             '</tr>'
         )
         .join('');
-      return `<table class="file-list-table">${rows}</table>`;
+      return (
+        '<table class="file-list-table">' +
+        '  <thead>' +
+        '    <tr>' +
+        '      <th>Created</th>' +
+        '      <th>Access</th>' +
+        '      <th>Modifyed</th>' +
+        '      <th>Change</th>' +
+        '      <th>Size (bytes)</th>' +
+        '    </tr>' +
+        '  </thead>' +
+        '  <tbody>' +
+        rows +
+        '  </tbody>' +
+        '</table>'
+      );
     }
 
     function numberWithCommas(x) {
@@ -71,10 +86,13 @@ module.exports = function(fileData, onComplete) {
       .replace('${fileCount}', fileData.fileCount)
       .replace('${directoryCount}', fileData.directoryCount);
 
-    fs.writeFile('./report.html', html, function(err) {
+    fs.writeFile('./output/report.html', html, function(err) {
       if (err) {
         return console.log(err);
       }
+
+      // Copy the style file
+      fs.createReadStream('./static/report-style.css').pipe(fs.createWriteStream('./output/style.css'));
 
       if (typeof onComplete === 'function') {
         onComplete();

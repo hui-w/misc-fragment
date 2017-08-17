@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>File Status Report</title>
+  <link href="../static/report-style.css" rel="stylesheet">
+</head>
+<body>
+
+  <p>
+  ${dateTime}
+  </p>
+
+  <p>
+  Scanned ${fileCount} files in ${directoryCount} directories.
+  </p>
+
+  <table class="report-table">
+    <thead>
+      <tr>
+        <th class="num">#</th>
+        <th class="path">File Path</th>
+        <th class="size">File Size (bytes)</th>
+        <th class="status">Duplicates</th>
+      </tr>
+    </thead>
+    <tbody>
+${trs}
+    </tbody>
+  </table>
+
+</body>
+</html>

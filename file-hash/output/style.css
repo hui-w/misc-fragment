@@ -1,30 +1,24 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>File Status Report</title>
-<style>
-
 html, body {
   padding: 4px;
   margin: 0px;
 }
 
-table, td, th {
+.report-table, .report-table td, .report-table th {
     border: 1px solid black;
 }
 
-table {
+.report-table {
     border-collapse: collapse;
     width: 100%;
 }
 
-th {
+.report-table th {
   padding: 4px;
   color: #fff;
   background-color: RGB(29, 157, 116);
 }
 
-td {
+.report-table td {
   padding: 0px 4px;
 }
 
@@ -67,32 +61,3 @@ td {
 .file-list-table .secondary-info {
   font-size: 80%;
 }
-
-</style>
-</head>
-<body>
-
-  <p>
-  ${dateTime}
-  </p>
-
-  <p>
-  Scanned ${fileCount} files in ${directoryCount} directories.
-  </p>
-
-  <table class="report-table">
-    <thead>
-      <tr>
-        <th class="num">#</th>
-        <th class="path">File Path</th>
-        <th class="size">File Size (Bytes)</th>
-        <th class="status">Duplicates</th>
-      </tr>
-    </thead>
-    <tbody>
-${trs}
-    </tbody>
-  </table>
-
-</body>
-</html>

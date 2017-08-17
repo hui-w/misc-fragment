@@ -1,0 +1,63 @@
+html, body {
+  padding: 4px;
+  margin: 0px;
+}
+
+.report-table, .report-table td, .report-table th {
+    border: 1px solid black;
+}
+
+.report-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.report-table th {
+  padding: 4px;
+  color: #fff;
+  background-color: RGB(29, 157, 116);
+}
+
+.report-table td {
+  padding: 0px 4px;
+}
+
+.report-table td.num {
+  text-align: center;
+}
+
+.report-table td.path{
+
+}
+
+.report-table th.size, .report-table td.size {
+  text-align: right;
+}
+
+.report-table td.status {
+  text-align: center;
+}
+
+.report-table tr.odd {
+  background-color: RGB(230, 230, 230);
+}
+
+.report-table tr.highlight td.status {
+  background-color: RGB(251, 188, 5);
+}
+
+.report-table tr:hover {
+  background-color: #ccc;
+}
+
+.file-list-table {
+  margin: 2px 0px;
+}
+
+.file-list-table .main-info {
+  font-weight: bold;
+}
+
+.file-list-table .secondary-info {
+  font-size: 80%;
+}
