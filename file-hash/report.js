@@ -23,7 +23,7 @@ module.exports = function(fileData, onComplete) {
             `<td>${file.atime.YYYYMMDDHHMMSS()}</td>` +
             `<td>${file.mtime.YYYYMMDDHHMMSS()}</td>` +
             `<td>${file.ctime.YYYYMMDDHHMMSS()}</td>` +
-            `<td>${file.size} bytes</td>` +
+            `<td>${numberWithCommas(file.size)} bytes</td>` +
             '</tr>'
         )
         .join('');
