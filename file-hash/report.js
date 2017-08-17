@@ -52,12 +52,29 @@ module.exports = function(fileData, onComplete) {
     }
 
     // Sort the fileData for output
-    const sortedKeys = Object.keys(fileData.hash).sort(
-      (a, b) =>
-        fileData.hash[b].count === fileData.hash[a].count
-          ? fileData.hash[b].size - fileData.hash[a].size
-          : fileData.hash[b].count - fileData.hash[a].count
-    );
+    const sortedKeys = Object.keys(fileData.hash).sort((a, b) => {
+      const countA = fileData.hash[a].count;
+      const countB = fileData.hash[b].count;
+      if (countA === countB) {
+        if (countA === 1) {
+          // Non-duplicated files, sort by name
+          const pathA = fileData.hash[a].files[0].pathName;
+          const pathB = fileData.hash[b].files[0].pathName;
+          if (pathA > pathB) {
+            return 1;
+          } else if (pathA < pathB) {
+            return -1;
+          } else {
+            return 0;
+          }
+        } else {
+          // Duplicated files, sort by size
+          return fileData.hash[b].size - fileData.hash[a].size;
+        }
+      } else {
+        return countB - countA;
+      }
+    });
 
     // Table rows
     const trs = sortedKeys
