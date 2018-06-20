@@ -1,28 +1,30 @@
+# Prompt for a number input
 def number_input(message):
 	isValid = False
 	while not isValid:
 		userInput = input(message)
 		try:
-		   val = int(userInput)
-		   isValid = True
+			val = int(userInput)
+			for i, ch in enumerate(userInput):
+				val = int(ch)
+#				print(ch, '(%d)' %i)
+
+#			for i in range(len(userInput)):
+#				print(userInput[i], '(%d)' %i)
+
+			isValid = True
 		except ValueError:
-		   print("Error: Not a Number")
-		   isValid = False
+			print("Error: Not a Number")
+			isValid = False
 	return userInput
 
 
+# Reverse the input string
 def string_reverse(string):  
     return string[::-1]
 
-inputNum = number_input('give me a number:')
-input1 = input("Input Number 1: ")
-input2 = input("Input Number 2: ")
-
-#for i, ch in enumerate(input1):
-#	print(ch, '(%d)' %i)
-#
-#for i in range(len(input2)):
-#	print(input2[i], '(%d)' %i)
+input1 = number_input("Input Number 1: ")
+input2 = number_input("Input Number 2: ")
 
 # Input two strings and reverse them into tuples
 tuple1 = tuple(string_reverse(input1))
