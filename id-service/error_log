@@ -1,0 +1,4 @@
+[04-Jul-2018 09:32:59 Etc/GMT] PHP Notice:  Undefined index: count in /home/qlikenog/public_html/app/id_service/index.php on line 15
+[04-Jul-2018 09:32:59 Etc/GMT] PHP Warning:  SQLite3::exec(): table region already exists in /home/qlikenog/public_html/app/id_service/index.php on line 53
+[04-Jul-2018 09:33:05 Etc/GMT] PHP Notice:  Undefined index: count in /home/qlikenog/public_html/app/id_service/index.php on line 15
+[04-Jul-2018 09:33:05 Etc/GMT] PHP Warning:  SQLite3::exec(): table region already exists in /home/qlikenog/public_html/app/id_service/index.php on line 53
