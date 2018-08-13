@@ -17,7 +17,7 @@
 <div id="demo3"></div>
 
 <script>
-var encrypted = CryptoJS.AES.encrypt("Message", "Secret Passphrase");
+var encrypted = CryptoJS.AES.encrypt("Message我", "Secret Passphrase");
 //U2FsdGVkX18ZUVvShFSES21qHsQEqZXMxQ9zgHy+bu0=
 
 var decrypted = CryptoJS.AES.decrypt(encrypted, "Secret Passphrase");

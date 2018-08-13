@@ -1,0 +1,82 @@
+<html>
+
+<head>
+    <script src="./crypto-js/components/core-min.js"></script>
+    <script src="./crypto-js/components/sha256.js"></script>
+    <script src="./crypto-js/components/enc-base64.js"></script>
+    <script src="./crypto-js/components/cipher-core.js"></script>
+    <script src="./crypto-js/rollups/aes.js"></script>
+</head>
+
+<body>
+    <script>
+    function toWordArray(str) {
+        return CryptoJS.enc.Utf8.parse(str);
+    }
+
+    function toString(words) {
+        return CryptoJS.enc.Utf8.stringify(words);
+    }
+
+    function toBase64String(words) {
+        return CryptoJS.enc.Base64.stringify(words);
+    }
+
+    function encrypt(input, key) {
+
+        var PROTOCOL_AES256 = 2;
+        var secret_key = CryptoJS.SHA256(key);
+        var header = toWordArray("AMAZON" + String.fromCharCode(PROTOCOL_AES256));
+        var iv = CryptoJS.lib.WordArray.random(16);
+        var body = CryptoJS.AES.encrypt(json_payload, secret_key, { iv: iv });
+
+        // construct the packet
+        // HEADER + IV + BODY
+        header.concat(iv);
+        header.concat(body.ciphertext);
+
+        // encode in base64
+        return toBase64String(header);
+    }
+
+    function decrypt(input, key) {
+        // convert payload encoded in base64 to words
+        var packet = CryptoJS.enc.Base64.parse(input);
+
+        // helpers to compute for offsets
+        var PROTOCOL_AES256 = 2;
+        var secret_key = CryptoJS.SHA256(key);
+        var header = toWordArray("AMAZON" + String.fromCharCode(PROTOCOL_AES256));
+        var iv = CryptoJS.lib.WordArray.random(16);
+
+        // compute for offsets
+        var packet_size = packet.words.length - (iv.words.length + header.words.length);
+        var start = iv.words.length + header.words.length;
+        var end = packet.words.length;
+
+        var ciphertext = CryptoJS.lib.WordArray.create(packet.words.slice(start, end));
+        var parsed_iv = CryptoJS.lib.WordArray.create(packet.words.slice(header.words.length, iv.words.length + 1));
+        ciphertext = toBase64String(ciphertext);
+        var decrypted = CryptoJS.AES.decrypt(ciphertext, secret_key, { iv: parsed_iv });
+
+        return toString(decrypted);
+    }
+
+    // data
+    var key = "ZxlNEnojO5HbQngiYvrqu32Br6V";
+    var data = {};
+    data["name"] = "andrew王";
+    data["company"] = "amazon";
+    var json_payload = JSON.stringify(data);
+
+    console.log(json_payload);
+
+    var payload = encrypt(json_payload, key);
+    console.log(payload);
+    var decoded = decrypt(payload, key);
+
+    console.log(decoded);
+    </script>
+</body>
+
+</html>
