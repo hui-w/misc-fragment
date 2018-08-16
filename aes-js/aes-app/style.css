@@ -1,0 +1,23 @@
+html,
+body {
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+#root {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.toolbar {
+    margin: 10px;
+    border: 1px solid #ccc;
+}
+
+.workspace {
+    flex-grow: 1;
+    margin: 10px;
+    border: 1px solid #ccc;
+}

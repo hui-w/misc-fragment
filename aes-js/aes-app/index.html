@@ -1,0 +1,24 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <title>AES Crypto App</title>
+    <script src="./aes.js"></script>
+    <script type="text/javascript" src="aes.js"></script>
+    <script type="text/javascript" src="util.js"></script>
+    <script type="text/javascript" src="app.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div id="root"></div>
+    <script type="text/javascript" src="app.js"></script>
+    <script type="text/javascript">
+    var app = null;
+    addEventListener("load", function() {
+        app = new AesCryptoApp("root");
+    });
+    </script>
+</body>
+
+</html>

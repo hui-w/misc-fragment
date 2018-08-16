@@ -1,11 +1,10 @@
 <html>
 
 <head>
-    <script src="./crypto-js/components/core-min.js"></script>
-    <script src="./crypto-js/components/sha256.js"></script>
-    <script src="./crypto-js/components/enc-base64.js"></script>
-    <script src="./crypto-js/components/cipher-core.js"></script>
-    <script src="./crypto-js/rollups/aes.js"></script>
+    <script src="../CryptoJS_3_1_2/components/core-min.js"></script>
+    <script src="../CryptoJS_3_1_2/components/sha256.js"></script>
+    <script src="../CryptoJS_3_1_2/components/enc-base64.js"></script>
+    <script src="../CryptoJS_3_1_2/rollups/aes.js"></script>
 </head>
 
 <body>
@@ -65,14 +64,13 @@
     // data
     var key = "ZxlNEnojO5HbQngiYvrqu32Br6V";
     var data = {};
-    data["name"] = "andrew王";
+    data["name"] = "andrew";
     data["company"] = "amazon";
     var json_payload = JSON.stringify(data);
 
     console.log(json_payload);
 
     var payload = encrypt(json_payload, key);
-    console.log(payload);
     var decoded = decrypt(payload, key);
 
     console.log(decoded);
