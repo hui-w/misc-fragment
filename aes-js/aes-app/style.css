@@ -3,6 +3,8 @@ body {
     overflow: hidden;
     margin: 0;
     padding: 0;
+    font-size: 12px;
+    font-family: "Lucida Grande", verdana, arial, helvetica, sans-serif;
 }
 
 #root {
@@ -16,7 +18,7 @@ body {
     border: 1px solid #ccc;
 }
 
-.workspace {
+.editor {
     flex-grow: 1;
     margin: 10px;
     border: 1px solid #ccc;
