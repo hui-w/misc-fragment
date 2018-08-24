@@ -1,6 +1,5 @@
 html,
 body {
-    overflow: hidden;
     margin: 0;
     padding: 0;
     font-size: 12px;
@@ -10,16 +9,92 @@ body {
 #root {
     display: flex;
     flex-direction: column;
-    flex-grow: 1;
+    width: 100vw;
+    height: 100vh;
+    min-width: 600px;
+    min-height: 400px;
+    overflow: scroll;
+}
+
+.toolbar-form input[type="text"],
+.toolbar-form input[type="date"],
+.toolbar-form input[type="datetime"],
+.toolbar-form input[type="email"],
+.toolbar-form input[type="number"],
+.toolbar-form input[type="search"],
+.toolbar-form input[type="time"],
+.toolbar-form input[type="url"],
+.toolbar-form input[type="password"],
+.toolbar-form textarea,
+.toolbar-form select {
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    outline: none;
+    padding: 7px;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    background: transparent;
+}
+
+.toolbar-form textarea {
+    resize: none;
+    overflow: hidden;
+}
+
+.toolbar-form input[type="button"],
+.toolbar-form input[type="submit"] {
+    -moz-box-shadow: inset 0px 1px 0px 0px #45D6D6;
+    -webkit-box-shadow: inset 0px 1px 0px 0px #45D6D6;
+    box-shadow: inset 0px 1px 0px 0px #45D6D6;
+    background-color: #2CBBBB;
+    border: 1px solid #27A0A0;
+    display: inline-block;
+    cursor: pointer;
+    color: #FFFFFF;
+    font-family: 'Open Sans Condensed', sans-serif;
+    font-size: 14px;
+    padding: 8px 18px;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.toolbar-form input[type="button"]:hover,
+.toolbar-form input[type="submit"]:hover {
+    background: linear-gradient(to bottom, #34CACA 5%, #30C9C9 100%);
+    background-color: #34CACA;
 }
 
 .toolbar {
-    margin: 10px;
-    border: 1px solid #ccc;
+    display: flex;
+    padding: 10px;
+    justify-content: space-between;
 }
 
-.editor {
+.toolbar__input {
+    display: flex;
     flex-grow: 1;
-    margin: 10px;
-    border: 1px solid #ccc;
+    padding-right: 20px;
+    align-items: center;
+    font-family: 'Open Sans Condensed', sans-serif;
+    font-size: 14px;
+    text-transform: uppercase;
+    color: #999;
+}
+
+.toolbar__input input[type=password] {
+    flex-grow: 1;
+    margin-left: 10px;
+}
+
+.toolbar__button {}
+
+.editor {
+    display: flex;
+    flex-grow: 1;
+    padding: 10px;
+}
+
+.editor textarea {
+    flex-grow: 1;
 }
