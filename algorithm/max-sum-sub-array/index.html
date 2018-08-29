@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Test</title>
+    <script>
+    function findSubArrayWithMaxSum1(input) {
+        var startIndex = -1;
+        var stopIndex = -1;
+        var maxSum = -1;
+        for (var i = 0; i < input.length; i++) {
+            for (var j = i; j < input.length; j++) {
+                var sum = 0;
+                for (var k = i; k <= j; k++) {
+                    sum += input[k];
+                }
+                if (sum > maxSum) {
+                    startIndex = i;
+                    stopIndex = j;
+                    maxSum = sum;
+                }
+            }
+        }
+
+        // Output
+        console.log(input.slice(startIndex, stopIndex + 1), maxSum);
+    }
+
+    function findSubArrayWithMaxSum2(input) {
+        var startIndex = -1;
+        var stopIndex = -1;
+        var maxSum = -1;
+        var sum = -1;
+        for (var i = 0; i < input.length; i++) {
+            if (sum < 0) {
+                sum = input[i];
+                startIndex = i;
+            } else {
+                sum += input[i];
+            }
+
+            if (sum > maxSum) {
+                maxSum = sum;
+                stopIndex = i;
+            }
+        }
+
+        // Output
+        console.log(input.slice(startIndex, stopIndex + 1), maxSum);
+    }
+    </script>
+</head>
+
+<body>
+    <script>
+    const input = [1, -2, 3, 10, -4, 7, 2, -5];
+    findSubArrayWithMaxSum1(input);
+    findSubArrayWithMaxSum2(input);
+    </script>
+</body>
+
+</html>
