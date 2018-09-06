@@ -16,25 +16,15 @@ body {
     overflow: scroll;
 }
 
-.toolbar-form input[type="text"],
-.toolbar-form input[type="date"],
-.toolbar-form input[type="datetime"],
-.toolbar-form input[type="email"],
-.toolbar-form input[type="number"],
-.toolbar-form input[type="search"],
-.toolbar-form input[type="time"],
-.toolbar-form input[type="url"],
-.toolbar-form input[type="password"],
-.toolbar-form textarea,
-.toolbar-form select {
+.toolbar-form input[type="password"] {
     box-sizing: border-box;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     outline: none;
     padding: 7px;
-    border: none;
-    border-bottom: 1px solid #ddd;
-    background: transparent;
+    border: 1px solid RGB(210, 71, 28);
+    background: RGB(242, 200, 192);
+    border-radius: 4px;
 }
 
 .toolbar-form textarea {
@@ -42,57 +32,83 @@ body {
     overflow: hidden;
 }
 
-.toolbar-form input[type="button"],
-.toolbar-form input[type="submit"] {
-    -moz-box-shadow: inset 0px 1px 0px 0px #45D6D6;
-    -webkit-box-shadow: inset 0px 1px 0px 0px #45D6D6;
-    box-shadow: inset 0px 1px 0px 0px #45D6D6;
-    background-color: #2CBBBB;
-    border: 1px solid #27A0A0;
+.toolbar-form input[type="button"] {
+    -moz-box-shadow: inset 0px 1px 0px 0px #FFF;
+    -webkit-box-shadow: inset 0px 1px 0px 0px #FFF;
+    box-shadow: inset 0px 1px 0px 0px #FFF;
+    background-color: RGB(244, 244, 244);
+    border: 1px solid RGB(244, 244, 244);
     display: inline-block;
     cursor: pointer;
-    color: #FFFFFF;
+    color: RGB(210, 71, 28);
     font-family: 'Open Sans Condensed', sans-serif;
     font-size: 14px;
-    padding: 8px 18px;
+    padding: 6px 18px;
     text-decoration: none;
     text-transform: uppercase;
+    border-radius: 4px;
 }
 
-.toolbar-form input[type="button"]:hover,
-.toolbar-form input[type="submit"]:hover {
-    background: linear-gradient(to bottom, #34CACA 5%, #30C9C9 100%);
-    background-color: #34CACA;
-}
 
 .toolbar {
     display: flex;
     padding: 10px;
     justify-content: space-between;
+    color: #fff;
+    background-color: RGB(210, 71, 28);
 }
 
-.toolbar__input {
+.toolbar__title-container {
     display: flex;
-    flex-grow: 1;
     padding-right: 20px;
     align-items: center;
     font-family: 'Open Sans Condensed', sans-serif;
     font-size: 14px;
     text-transform: uppercase;
-    color: #999;
 }
 
-.toolbar__input input[type=password] {
+.toolbar__input-container {
+    display: flex;
     flex-grow: 1;
-    margin-left: 10px;
+    padding-right: 20px;
 }
 
-.toolbar__button {}
+.toolbar__key-input {
+    margin-left: 10px;
+    width: 200px;
+    color: RGB(210, 71, 28);
+}
+
+.toolbar__key-input:focus {
+    flex-grow: 1;
+    background-color: #fff;
+    color: #000;
+}
+
+.toolbar__key-input::placeholder {
+    /* Chrome, Firefox, Opera, Safari 10.1+ */
+    color: RGB(210, 71, 28);
+    opacity: 1;
+    /* Firefox */
+}
+
+.toolbar__key-input:-ms-input-placeholder {
+    /* Internet Explorer 10-11 */
+    color: RGB(210, 71, 28);
+}
+
+.toolbar__key-input::-ms-input-placeholder {
+    /* Microsoft Edge */
+    color: RGB(210, 71, 28);
+}
+
+.toolbar__button-container {}
 
 .editor {
     display: flex;
     flex-grow: 1;
     padding: 10px;
+    background-color: RGB(248, 248, 248);
 }
 
 .editor textarea {
