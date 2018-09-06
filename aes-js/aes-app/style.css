@@ -25,6 +25,13 @@ body {
     border: 1px solid RGB(210, 71, 28);
     background: RGB(242, 200, 192);
     border-radius: 4px;
+    color: RGB(210, 71, 28);
+}
+
+.toolbar-form input:focus[type="password"] {
+    flex-grow: 1;
+    background-color: #fff;
+    color: #000;
 }
 
 .toolbar-form textarea {
@@ -33,20 +40,28 @@ body {
 }
 
 .toolbar-form input[type="button"] {
-    -moz-box-shadow: inset 0px 1px 0px 0px #FFF;
-    -webkit-box-shadow: inset 0px 1px 0px 0px #FFF;
-    box-shadow: inset 0px 1px 0px 0px #FFF;
-    background-color: RGB(244, 244, 244);
-    border: 1px solid RGB(244, 244, 244);
+    -moz-box-shadow: inset 0px 1px 0px 0px RGB(242, 200, 192);
+    -webkit-box-shadow: inset 0px 1px 0px 0px RGB(242, 200, 192);
+    box-shadow: inset 0px 1px 0px 0px RGB(242, 200, 192);
+    background: RGB(242, 200, 192);
+    border: 1px solid RGB(242, 200, 192);
     display: inline-block;
     cursor: pointer;
     color: RGB(210, 71, 28);
     font-family: 'Open Sans Condensed', sans-serif;
     font-size: 14px;
-    padding: 6px 18px;
+    padding: 6px 12px;
     text-decoration: none;
     text-transform: uppercase;
     border-radius: 4px;
+}
+
+.toolbar-form input:hover[type="button"] {
+    -moz-box-shadow: inset 0px 1px 0px 0px RGB(244, 244, 244);
+    -webkit-box-shadow: inset 0px 1px 0px 0px RGB(244, 244, 244);
+    box-shadow: inset 0px 1px 0px 0px RGB(244, 244, 244);
+    background: RGB(244, 244, 244);
+    border: 1px solid RGB(244, 244, 244);
 }
 
 
@@ -74,16 +89,9 @@ body {
 }
 
 .toolbar__key-input {
-    margin-left: 10px;
     width: 200px;
-    color: RGB(210, 71, 28);
 }
 
-.toolbar__key-input:focus {
-    flex-grow: 1;
-    background-color: #fff;
-    color: #000;
-}
 
 .toolbar__key-input::placeholder {
     /* Chrome, Firefox, Opera, Safari 10.1+ */
@@ -102,7 +110,9 @@ body {
     color: RGB(210, 71, 28);
 }
 
-.toolbar__button-container {}
+.toolbar__button-container input {
+    margin-right: 10px;
+}
 
 .editor {
     display: flex;

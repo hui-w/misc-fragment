@@ -11,6 +11,6 @@ EditorArea.prototype = {
             'class': 'editor'
         });
 
-        this.textArea = this.container.createChild('textarea');
+        this.textArea = this.container.createChild('textarea', { 'id': 'txtContent' });
     },
 }
