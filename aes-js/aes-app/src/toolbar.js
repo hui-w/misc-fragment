@@ -13,23 +13,32 @@ function Toolbar(parent) {
 }
 
 Toolbar.prototype = {
-    handleOnEncryptClick: function(e) {
-        if (typeof this.onEncrypt == "function") {
-            var key = $('txtPassword').value;
-            this.onEncrypt(key);
+    validateKeyAndCall: function(func) {
+        if (typeof func == "function") {
+            var key = this.getKey();
+            if (key.length > 0) {
+                func(key);
+            } else {
+                this.keyInput.focus();
+            }
         }
     },
 
+    handleOnEncryptClick: function(e) {
+        this.validateKeyAndCall(this.onEncrypt);
+    },
+
     handleOnDecryptClick: function(e) {
-        if (typeof this.onDecrypt == "function") {
-            var key = $('txtPassword').value;
-            this.onDecrypt(key);
-        }
+        this.validateKeyAndCall(this.onDecrypt);
+    },
+
+    getKey: function() {
+        return this.keyInput.value;
     },
 
     render: function() {
         this.container = this.parent.createChild('div', {
-            class: 'toolbar toolbar-form'
+            class: 'toolbar aesapp-form'
         });
 
         // Title
@@ -47,6 +56,7 @@ Toolbar.prototype = {
             placeholder: 'Input Key',
             class: 'toolbar__key-input'
         });
+        this.keyInput.addEventListener("click", function() { this.select() }, true);
 
         // Buttons
         var buttonsContainer = this.container.createChild('div', {

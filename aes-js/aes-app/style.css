@@ -16,7 +16,7 @@ body {
     overflow: scroll;
 }
 
-.toolbar-form input[type="password"] {
+.aesapp-form input[type="password"] {
     box-sizing: border-box;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -28,18 +28,35 @@ body {
     color: RGB(210, 71, 28);
 }
 
-.toolbar-form input:focus[type="password"] {
+.aesapp-form input:focus[type="password"] {
     flex-grow: 1;
     background-color: #fff;
     color: #000;
 }
 
-.toolbar-form textarea {
+.aesapp-form input::placeholder {
+    /* Chrome, Firefox, Opera, Safari 10.1+ */
+    color: RGB(210, 71, 28);
+    opacity: 1;
+    /* Firefox */
+}
+
+.aesapp-form input:-ms-input-placeholder {
+    /* Internet Explorer 10-11 */
+    color: RGB(210, 71, 28);
+}
+
+.aesapp-form input::-ms-input-placeholder {
+    /* Microsoft Edge */
+    color: RGB(210, 71, 28);
+}
+
+.aesapp-form textarea {
     resize: none;
     overflow: hidden;
 }
 
-.toolbar-form input[type="button"] {
+.aesapp-form input[type="button"] {
     -moz-box-shadow: inset 0px 1px 0px 0px RGB(242, 200, 192);
     -webkit-box-shadow: inset 0px 1px 0px 0px RGB(242, 200, 192);
     box-shadow: inset 0px 1px 0px 0px RGB(242, 200, 192);
@@ -56,7 +73,7 @@ body {
     border-radius: 4px;
 }
 
-.toolbar-form input:hover[type="button"] {
+.aesapp-form input:hover[type="button"] {
     -moz-box-shadow: inset 0px 1px 0px 0px RGB(244, 244, 244);
     -webkit-box-shadow: inset 0px 1px 0px 0px RGB(244, 244, 244);
     box-shadow: inset 0px 1px 0px 0px RGB(244, 244, 244);
@@ -93,23 +110,6 @@ body {
 }
 
 
-.toolbar__key-input::placeholder {
-    /* Chrome, Firefox, Opera, Safari 10.1+ */
-    color: RGB(210, 71, 28);
-    opacity: 1;
-    /* Firefox */
-}
-
-.toolbar__key-input:-ms-input-placeholder {
-    /* Internet Explorer 10-11 */
-    color: RGB(210, 71, 28);
-}
-
-.toolbar__key-input::-ms-input-placeholder {
-    /* Microsoft Edge */
-    color: RGB(210, 71, 28);
-}
-
 .toolbar__button-container input {
     margin-right: 10px;
 }
@@ -124,3 +124,45 @@ body {
 .editor textarea {
     flex-grow: 1;
 }
+
+.overlay {
+    position: fixed;
+    display: none;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2;
+}
+
+.overlay__content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.overlay__confirm-form {
+    display: flex;
+    flex-direction: column;
+    width: 220px;
+    background-color: RGB(210, 71, 28);
+    border: 1px solid #fff;
+    padding: 20px;
+}
+
+.overlay__confirm-form input[type=password] {
+    flex-grow: 1;
+}
+
+.overlay__confirm-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.overlay__confirm-buttons input[type=button] {}
