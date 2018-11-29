@@ -11,8 +11,8 @@ body {
     flex-direction: column;
     width: 100vw;
     height: 100vh;
-    min-width: 600px;
-    min-height: 400px;
+    min-width: 280px;
+    min-height: 200px;
     overflow: scroll;
 }
 
@@ -26,6 +26,7 @@ body {
     background: RGB(242, 200, 192);
     border-radius: 4px;
     color: RGB(210, 71, 28);
+    width: 150px;
 }
 
 .aesapp-form input:focus[type="password"] {
@@ -84,10 +85,15 @@ body {
 
 .toolbar {
     display: flex;
-    padding: 10px;
     justify-content: space-between;
+    flex-wrap: wrap;
     color: #fff;
     background-color: RGB(210, 71, 28);
+    padding: 0px 10px 10px 10px;
+}
+
+.toolbar > * {
+    margin-top: 10px;
 }
 
 .toolbar__title-container {

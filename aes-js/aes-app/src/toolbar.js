@@ -53,7 +53,8 @@ Toolbar.prototype = {
         this.keyInput = keyInputContainer.createChild('input', {
             id: 'txtPassword',
             type: 'password',
-            placeholder: 'Input Key',
+            placeholder: 'Key',
+            autocomplete: 'new-password',
             class: 'toolbar__key-input'
         });
         this.keyInput.addEventListener("click", function() { this.select() }, true);
