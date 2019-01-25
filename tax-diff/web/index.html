@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <script src="vendor/vue.js"></script>
+    <link href="style.css" media="all" rel="stylesheet" />
+    <title>T Diff</title>
+</head>
+
+<body>
+    <div id="app">
+        <div class="content">
+            <h2 class="title">{{ title }}</h2>
+            <t-table className="TaxTable" title="Table 1" :data="tableData1"></t-table>
+            <t-table title="Table 2" :data="tableData2"></t-table>
+        </div>
+    </div>
+
+    <input type="button" onclick="javascript: app.tableData1 = [{level: 24}];"/>
+    <script src="./component/t-table.js"></script>
+    <script src="./component/app.js"></script>
+</body>
+
+</html>
